@@ -24,15 +24,30 @@ bool FileIO::save_scalar_field_cache(QMeshPatch* tetPatch, const std::string& mo
     }
     // max_digits10 (17 for IEEE 754 double) guarantees every distinct double has a
     // unique decimal representation. scientific avoids fixed-notation truncation.
-    // Without this, default precision is 6 digits — slicing isovalue extraction
-    // would silently diverge at the 7th digit on cached vs fresh runs.
     out << std::setprecision(std::numeric_limits<double>::max_digits10) << std::scientific;
-    out << "# scalar field cache for model '" << model_name
-        << "', double precision, format: <node_index> <scalar>\n";
+
+    // Count nodes first so the header carries the expected size — load verifies
+    // this matches the load-time mesh before touching any node.
+    int total = 0;
+    for (GLKPOSITION Pos = tetPatch->GetNodeList().GetHeadPosition(); Pos;) {
+        tetPatch->GetNodeList().GetNext(Pos);
+        ++total;
+    }
+
+    // Format: header line with model + node count, then one scalar per line in
+    // GetNodeList iteration order. Earlier attempt used <index, scalar> but
+    // GetIndexNo() is not stable across save/load cycles (something in the
+    // deformation flow reassigns an index), causing spurious cache misses.
+    // Iteration order is deterministic for a freshly loaded .tet, so per-line
+    // ordering is the safer key.
+    out << "# s3 scalar field cache v2\n";
+    out << "# model: " << model_name << "\n";
+    out << "# nodes: " << total << "\n";
+
     int n = 0;
     for (GLKPOSITION Pos = tetPatch->GetNodeList().GetHeadPosition(); Pos;) {
         QMeshNode* node = (QMeshNode*)tetPatch->GetNodeList().GetNext(Pos);
-        out << node->GetIndexNo() << " " << node->scalarField << "\n";
+        out << node->scalarField << "\n";
         ++n;
     }
     std::cout << "[Cache] saved " << n << " node scalars -> " << path << "\n";
@@ -44,33 +59,51 @@ bool FileIO::load_scalar_field_cache(QMeshPatch* tetPatch, const std::string& mo
     std::ifstream in(path);
     if (!in.is_open()) return false;
 
-    std::unordered_map<int, QMeshNode*> nodeByIndex;
+    // Collect mesh nodes in iteration order — must match save-time order for
+    // round-trip to work. Bunny_cut6 + a fresh ImportTETFile reproduces order.
+    std::vector<QMeshNode*> nodes;
     for (GLKPOSITION Pos = tetPatch->GetNodeList().GetHeadPosition(); Pos;) {
-        QMeshNode* node = (QMeshNode*)tetPatch->GetNodeList().GetNext(Pos);
-        nodeByIndex[node->GetIndexNo()] = node;
+        nodes.push_back((QMeshNode*)tetPatch->GetNodeList().GetNext(Pos));
     }
 
+    int expected_nodes = -1;
     std::string line;
-    int idx = 0, n = 0;
-    double val = 0.0;
     while (std::getline(in, line)) {
-        if (line.empty() || line[0] == '#') continue;
-        std::istringstream iss(line);
-        if (!(iss >> idx >> val)) continue;
-        auto it = nodeByIndex.find(idx);
-        if (it != nodeByIndex.end()) {
-            it->second->scalarField = val;
-            ++n;
+        // Read header lines, looking for "# nodes: N" to sanity-check size.
+        if (line.empty()) continue;
+        if (line[0] != '#') {
+            // First data line — break out, will reprocess below.
+            in.seekg(-(std::streamoff)(line.size() + 1), std::ios::cur);
+            break;
+        }
+        if (line.rfind("# nodes:", 0) == 0) {
+            expected_nodes = std::stoi(line.substr(8));
         }
     }
-    if (n != (int)nodeByIndex.size()) {
-        std::cerr << "[Cache] WARNING: loaded " << n << " of " << nodeByIndex.size()
-                  << " expected nodes — cache may be stale (regenerate by deleting "
-                  << path << ")\n";
+
+    if (expected_nodes >= 0 && expected_nodes != (int)nodes.size()) {
+        std::cerr << "[Cache] mismatch: cache has " << expected_nodes
+                  << " nodes, current mesh has " << nodes.size()
+                  << " — regenerate by deleting " << path << "\n";
+        return false;
     }
-    std::cout << "[Cache] loaded " << n << "/" << nodeByIndex.size()
-              << " node scalars from " << path << "\n";
-    return n == (int)nodeByIndex.size();
+
+    int n = 0;
+    double val = 0.0;
+    while (n < (int)nodes.size() && (in >> val)) {
+        nodes[n]->scalarField = val;
+        ++n;
+    }
+
+    if (n != (int)nodes.size()) {
+        std::cerr << "[Cache] short read: got " << n << " of " << nodes.size()
+                  << " scalars — cache truncated, regenerate by deleting "
+                  << path << "\n";
+        return false;
+    }
+
+    std::cout << "[Cache] loaded " << n << " node scalars from " << path << "\n";
+    return true;
 }
 
 //output the boundary surface mash of volume model
