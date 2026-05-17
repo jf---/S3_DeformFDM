@@ -39,6 +39,21 @@ if(APPLE)
     add_compile_definitions(GL_SILENCE_DEPRECATION)
 endif()
 
+# vcglib (header-only) — drives the in-process isotropic remesher that
+# replaces the upstream MeshLab .bat workflow.
+include(FetchContent)
+FetchContent_Declare(vcglib
+    GIT_REPOSITORY https://github.com/cnr-isti-vclab/vcglib.git
+    GIT_TAG        2025.07
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(vcglib)
+if(NOT TARGET vcglib::vcglib)
+    add_library(vcglib::vcglib INTERFACE IMPORTED)
+    set_target_properties(vcglib::vcglib PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${vcglib_SOURCE_DIR}")
+endif()
+
 add_subdirectory(GLKLib)
 add_subdirectory(QMeshLib)
 add_subdirectory(ShapeLab)

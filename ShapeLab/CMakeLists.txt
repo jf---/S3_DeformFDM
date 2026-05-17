@@ -12,6 +12,7 @@ add_executable(ShapeLab
     toolpathGeneration.cpp
     GcodeGeneration.cpp
     Graph.cpp
+    Remesher.cpp
     MainWindow.ui
     ShapeLab.qrc
 )
@@ -30,6 +31,7 @@ target_link_libraries(ShapeLab PRIVATE
     Eigen3::Eigen
     QMeshLib
     GLKLib
+    vcglib::vcglib
 )
 
 if(APPLE)
@@ -41,6 +43,14 @@ if(OpenMP_CXX_FOUND)
 endif()
 
 set_target_properties(ShapeLab PROPERTIES
+    MACOSX_BUNDLE FALSE
+    WIN32_EXECUTABLE FALSE
+)
+
+add_executable(remesh_smoketest remesh_smoketest.cpp Remesher.cpp)
+target_link_libraries(remesh_smoketest PRIVATE vcglib::vcglib Eigen3::Eigen)
+target_include_directories(remesh_smoketest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(remesh_smoketest PROPERTIES
     MACOSX_BUNDLE FALSE
     WIN32_EXECUTABLE FALSE
 )

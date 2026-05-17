@@ -1,0 +1,139 @@
+#include "Remesher.h"
+
+#include <iostream>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <cstring>
+
+#include <vcg/complex/complex.h>
+#include <vcg/complex/algorithms/update/topology.h>
+#include <vcg/complex/algorithms/update/normal.h>
+#include <vcg/complex/algorithms/update/flag.h>
+#include <vcg/complex/algorithms/clean.h>
+#include <vcg/complex/algorithms/isotropic_remeshing.h>
+#include <wrap/io_trimesh/import_obj.h>
+#include <wrap/io_trimesh/export_obj.h>
+
+namespace {
+
+class RVertex;
+class RFace;
+class REdge;
+
+struct RUsedTypes : public vcg::UsedTypes<
+    vcg::Use<RVertex>::AsVertexType,
+    vcg::Use<REdge>::AsEdgeType,
+    vcg::Use<RFace>::AsFaceType> {};
+
+class RVertex : public vcg::Vertex<RUsedTypes,
+    vcg::vertex::Coord3f, vcg::vertex::Normal3f,
+    vcg::vertex::Qualityf, vcg::vertex::Mark,
+    vcg::vertex::VFAdj, vcg::vertex::BitFlags> {};
+class REdge : public vcg::Edge<RUsedTypes> {};
+class RFace : public vcg::Face<RUsedTypes, vcg::face::VertexRef,
+    vcg::face::Normal3f, vcg::face::Qualityf, vcg::face::Mark,
+    vcg::face::VFAdj, vcg::face::FFAdj, vcg::face::BitFlags> {};
+
+class RMesh : public vcg::tri::TriMesh<std::vector<RVertex>, std::vector<RFace>> {};
+
+bool ends_with(const std::string& s, const std::string& suffix) {
+    return s.size() >= suffix.size() &&
+           s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+bool ensure_dir(const std::string& path) {
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0) return S_ISDIR(st.st_mode);
+    return mkdir(path.c_str(), 0755) == 0;
+}
+
+} // namespace
+
+bool Remesher::remesh_file(const std::string& input_obj,
+                           const std::string& output_obj,
+                           const RemeshParams& p) {
+    RMesh m;
+
+    int mask = 0;
+    int load = vcg::tri::io::ImporterOBJ<RMesh>::Open(m, input_obj.c_str(), mask);
+    if (load != vcg::tri::io::ImporterOBJ<RMesh>::E_NOERROR &&
+        load != vcg::tri::io::ImporterOBJ<RMesh>::E_NON_CRITICAL_ERROR) {
+        std::cerr << "[Remesher] failed to load " << input_obj
+                  << " (code " << load << ")\n";
+        return false;
+    }
+
+    vcg::tri::Clean<RMesh>::RemoveDuplicateVertex(m);
+    vcg::tri::Clean<RMesh>::RemoveUnreferencedVertex(m);
+    vcg::tri::Allocator<RMesh>::CompactEveryVector(m);
+    vcg::tri::UpdateTopology<RMesh>::FaceFace(m);
+    vcg::tri::UpdateTopology<RMesh>::VertexFace(m);
+    vcg::tri::UpdateNormal<RMesh>::PerVertexNormalizedPerFace(m);
+    vcg::tri::UpdateFlags<RMesh>::FaceBorderFromFF(m);
+    vcg::tri::UpdateFlags<RMesh>::VertexBorderFromFaceBorder(m);
+
+    typename vcg::tri::IsotropicRemeshing<RMesh>::Params params;
+    params.SetTargetLen(p.target_edge_len);
+    params.SetFeatureAngleDeg(p.feature_angle_deg);
+    params.iter         = p.iterations;
+    params.adapt        = p.adaptive;
+    params.splitFlag    = p.split;
+    params.collapseFlag = p.collapse;
+    params.swapFlag     = p.swap;
+    params.smoothFlag   = p.smooth;
+    params.projectFlag  = p.reproject;
+    // vcglib defaults surfDistCheck=true with maxSurfDist uninitialized — every
+    // op fails the distance test against garbage. The MeshLab .mlx explicitly
+    // disables CheckSurfDist; mirror that here.
+    params.surfDistCheck = false;
+
+    const size_t v_before = m.VN(), f_before = m.FN();
+    vcg::tri::IsotropicRemeshing<RMesh>::Do(m, params);
+    std::cerr << "[Remesher] v " << v_before << "->" << m.VN()
+              << "  f " << f_before << "->" << m.FN()
+              << "  splits=" << params.stat.splitNum
+              << "  collapses=" << params.stat.collapseNum
+              << "  flips=" << params.stat.flipNum
+              << "  bbox_diag=" << m.bbox.Diag()
+              << "  target_len=" << p.target_edge_len << "\n";
+
+    int save = vcg::tri::io::ExporterOBJ<RMesh>::Save(m, output_obj.c_str(), vcg::tri::io::Mask::IOM_NONE);
+    if (save != 0) {
+        std::cerr << "[Remesher] failed to save " << output_obj
+                  << " (code " << save << ")\n";
+        return false;
+    }
+    return true;
+}
+
+int Remesher::remesh_directory(const std::string& input_dir,
+                               const std::string& output_dir,
+                               const RemeshParams& p) {
+    if (!ensure_dir(output_dir)) {
+        std::cerr << "[Remesher] cannot create output dir: " << output_dir << "\n";
+        return 0;
+    }
+
+    DIR* dir = opendir(input_dir.c_str());
+    if (!dir) {
+        std::cerr << "[Remesher] cannot open input dir: " << input_dir << "\n";
+        return 0;
+    }
+
+    int processed = 0;
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        std::string name = entry->d_name;
+        if (!ends_with(name, ".obj") && !ends_with(name, ".OBJ")) continue;
+
+        std::string in_path  = input_dir  + "/" + name;
+        std::string out_path = output_dir + "/" + name;
+        std::cout << "[Remesher] " << name << " ... " << std::flush;
+        bool ok = remesh_file(in_path, out_path, p);
+        std::cout << (ok ? "ok" : "FAIL") << "\n";
+        if (ok) ++processed;
+    }
+    closedir(dir);
+    std::cout << "[Remesher] " << processed << " file(s) remeshed -> " << output_dir << "\n";
+    return processed;
+}

@@ -18,6 +18,7 @@
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+#include "Remesher.h"
 #include "../GLKLib/GLKCameraTool.h"
 #include "../GLKLib/InteractiveTool.h"
 #include "../GLKLib/GLKMatrixLib.h"
@@ -2116,6 +2117,13 @@ void MainWindow::output_IsoLayer_set() {
     delete IO_operator;
 
     std::cout << "Finish outputing surface mesh of the tetmesh. " << std::endl;
+
+    // Replaces the upstream remesh_slimmedLayer.bat → MeshLab pipeline with an
+    // in-process vcglib pass using the same isotropic-remesh parameters as the
+    // .mlx (5 iter, target len 2.0, crease 30°, all sub-steps on).
+    const std::string in_dir  = "../DataSet/remesh_operation/layers_unremeshed";
+    const std::string out_dir = "../DataSet/remesh_operation/layers_remeshed";
+    Remesher::remesh_directory(in_dir, out_dir);
 }
 
 void MainWindow::adaptiveHeight_curvedLayer_Generation() {
