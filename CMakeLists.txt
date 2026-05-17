@@ -23,6 +23,19 @@ find_package(OpenGL REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Eigen3 3.3 NO_MODULE HINTS "$ENV{CONDA_PREFIX}")
 
+# Use Intel MKL Pardiso for the sparse solvers when available. Default OFF —
+# MKL isn't available on Apple Silicon and adds dependency weight elsewhere.
+# Windows/Linux users with MKL installed (set MKLROOT or pass MKL_DIR) can
+# pass -DUSE_MKL=ON to keep the original SIGGRAPH-paper performance.
+option(USE_MKL "Use Intel MKL Pardiso solver instead of Eigen-native" OFF)
+if(USE_MKL)
+    find_package(MKL REQUIRED CONFIG)
+    add_compile_definitions(S3_HAVE_MKL EIGEN_USE_MKL_ALL)
+    message(STATUS "Sparse solvers: Intel MKL Pardiso (USE_MKL=ON)")
+else()
+    message(STATUS "Sparse solvers: Eigen-native SimplicialLDLT/SparseLU (USE_MKL=OFF, ~2-5× slower than Pardiso)")
+endif()
+
 if(NOT TARGET Eigen3::Eigen)
     add_library(Eigen3::Eigen INTERFACE IMPORTED)
     set_target_properties(Eigen3::Eigen PROPERTIES

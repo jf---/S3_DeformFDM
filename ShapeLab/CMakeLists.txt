@@ -43,6 +43,10 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(ShapeLab PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
+if(USE_MKL)
+    target_link_libraries(ShapeLab PRIVATE MKL::MKL)
+endif()
+
 set_target_properties(ShapeLab PROPERTIES
     MACOSX_BUNDLE FALSE
     WIN32_EXECUTABLE FALSE

@@ -1,4 +1,5 @@
 #include"QMeshNode.h"
+#include "SparseSolvers.h"
 #include"QMeshFace.h"
 #include"QMeshTetra.h"
 #include"QMeshEdge.h"
@@ -257,7 +258,7 @@ void heatMethod::_solveHeatField(int BoundaryCondition) {
 		S = I - 100 * t * invVol * WeightMatrix;
 
 		std::cout << "Initialising Sparse Solver..\n";
-		Eigen::SparseLU <Eigen::SparseMatrix<double>> SolverN;// (PardisoLU/SparseLU)
+		S3SparseLU SolverN;// (PardisoLU/SparseLU)
 		SolverN.analyzePattern(S);
 		SolverN.factorize(S);
 		if (SolverN.info() != Eigen::Success)
@@ -288,7 +289,7 @@ void heatMethod::_solveHeatField(int BoundaryCondition) {
 		S = I - 100 * t * invVol * WeightMatrix;
 
 		std::cout << "Initialising Sparse Solver..\n";
-		Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
+		S3SparseLU Solver;// (PardisoLU/SparseLU)
 		Solver.analyzePattern(S);
 		Solver.factorize(S);
 		if (Solver.info() != Eigen::Success)
@@ -526,7 +527,7 @@ void heatMethod::_generateScalarField() {
 	/*Eigen::ColPivHouseholderQR<Eigen::MatrixXd> dec(WeightMatrix);
 	Eigen::VectorXd u = dec.solve(divVector);*/
 
-	Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
+	S3SparseLU Solver;// (PardisoLU/SparseLU)
 
 	Eigen::SparseMatrix<double> S = invVol * WeightMatrix + boundaryCompensator;
 	S = 100 * S;

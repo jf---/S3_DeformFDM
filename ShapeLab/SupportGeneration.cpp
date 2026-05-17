@@ -1,4 +1,5 @@
 #include <string>
+#include "SparseSolvers.h"
 #include "Paths.h"
 #include <fstream>
 #include <iostream>
@@ -1181,7 +1182,7 @@ void SupportGeneration::scalarField_4_supportSpace() {
 
 	Eigen::SparseMatrix<double> ATA(supportNodeNum, supportNodeNum);
 	ATA = Parameter.transpose() * Parameter;
-	Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
+	S3SparseLU Solver;// (PardisoLU/SparseLU)
 	Solver.compute(ATA);
 
 	Eigen::VectorXd ATb(supportNodeNum);

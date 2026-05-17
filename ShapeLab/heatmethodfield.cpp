@@ -1,4 +1,5 @@
 #include "heatmethodfield.h"
+#include "SparseSolvers.h"
 #include <iostream>
 
 using namespace std;
@@ -848,7 +849,7 @@ bool heatMethodField::scalarFieldCompute_zigzag() {
 
     Eigen::SparseMatrix<double> ATA(surfaceMesh->GetNodeNumber(), surfaceMesh->GetNodeNumber());
     ATA = Parameter.transpose() * Parameter;
-    Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;
+    S3SparseLU Solver;
 
     //Solver.compute(ATA);
     Solver.analyzePattern(ATA);

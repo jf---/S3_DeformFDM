@@ -1,5 +1,6 @@
 ﻿#include <QFileDialog>
 #include <QtDebug>
+#include "SparseSolvers.h"
 #include "Paths.h"
 #include <QDesktopWidget>
 #include <QCoreApplication>
@@ -1980,7 +1981,7 @@ void MainWindow::_vectorField_2_scalarField_withHardConstrain(QMeshPatch* tetMes
 
     Eigen::SparseMatrix<double> ATA(nodeNum, nodeNum);
     ATA = Parameter.transpose() * Parameter;
-    Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;
+    S3SparseLU Solver;
 
     Solver.compute(ATA);
 
@@ -2076,7 +2077,7 @@ void MainWindow::_compVectorField_smooth_withHardConstrain(QMeshPatch* tetMesh) 
 
     Eigen::SparseMatrix<double> ATA(eleNum, eleNum);
     ATA = Parameter.transpose() * Parameter;
-    Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;
+    S3SparseLU Solver;
     Solver.compute(ATA);
 
     std::vector<Eigen::VectorXd> ATb(3);
@@ -2747,7 +2748,7 @@ void MainWindow::_vectorField_2_scalarField(bool Up_Vector_Direction) {
 
     Eigen::SparseMatrix<double> ATA(model->GetNodeNumber(), model->GetNodeNumber());
     ATA = Parameter.transpose() * Parameter;
-    Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;
+    S3SparseLU Solver;
 
     Solver.analyzePattern(ATA);
     Solver.factorize(ATA);

@@ -1,4 +1,5 @@
 #include <Eigen/Eigen>
+#include "SparseSolvers.h"
 #include "Paths.h"
 
 #include "DeformTet.h"
@@ -918,15 +919,15 @@ void DeformTet::runASAP_SupportLess(bool initialGuess) {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -1307,15 +1308,15 @@ void DeformTet::runASAP_SupportLess_test(bool initialGuess) {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -1686,15 +1687,15 @@ void DeformTet::runASAP_SupportLess_test2(bool initialGuess) {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -2009,15 +2010,15 @@ void DeformTet::runASAP_SupportLess_test3() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -2396,7 +2397,7 @@ void DeformTet::_globalQuaternionSmooth2() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(2 * tet_Num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, 2 * tet_Num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(2 * tet_Num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -2475,7 +2476,7 @@ void DeformTet::_globalQuaternionSmooth3() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(2 * tet_Num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, 2 * tet_Num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(2 * tet_Num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -2942,15 +2943,15 @@ void DeformTet::runASAP_StrengthReinforcement() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -3200,7 +3201,7 @@ void DeformTet::_globalQuaternionSmooth1() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(tet_Num + critical_tet_num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, tet_Num + critical_tet_num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(tet_Num + critical_tet_num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -3283,7 +3284,7 @@ void DeformTet::_globalQuaternionSmooth1_supportLess() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(tet_Num + critical_tet_num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, tet_Num + critical_tet_num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(tet_Num + critical_tet_num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -3369,7 +3370,7 @@ void DeformTet::_globalQuaternionSmooth1_surfaceQuality() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(tet_Num + critical_tet_num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, tet_Num + critical_tet_num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(tet_Num + critical_tet_num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -3469,7 +3470,7 @@ void DeformTet::_globalQuaternionSmooth1_strengthReinforcement() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(tet_Num + critical_tet_num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, tet_Num + critical_tet_num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(tet_Num + critical_tet_num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -3564,7 +3565,7 @@ void DeformTet::_globalQuaternionSmooth4() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(tet_Num + critical_tet_num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, tet_Num + critical_tet_num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(tet_Num + critical_tet_num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -3677,7 +3678,7 @@ void DeformTet::_globalQuaternionSmooth4_withoutBottom() {
 	// Define matrix for global quaternion smooth
 	Eigen::SparseMatrix<double> matLap_A;	matLap_A.resize(tet_Num + critical_tet_num, tet_Num);
 	Eigen::SparseMatrix<double> matLap_AT;	matLap_AT.resize(tet_Num, tet_Num + critical_tet_num);
-	Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> GlobalQuatSmooth_Solver;
+	S3SparseLDLT GlobalQuatSmooth_Solver;
 	Eigen::MatrixXd vector_Quat_x = Eigen::MatrixXd::Zero(tet_Num, 4);
 	Eigen::MatrixXd vector_matrix_b = Eigen::MatrixXd::Zero(tet_Num + critical_tet_num, 4);
 	//give memory to sparse matrix, to accerate the insert speed
@@ -3895,15 +3896,15 @@ void DeformTet::runASAP_StrengthReinforcement_test() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -4215,15 +4216,15 @@ void DeformTet::runASAP_StrengthReinforcement_stressLine() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -4664,15 +4665,15 @@ void DeformTet::runASAP_SurfaceQuality() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -4999,15 +5000,15 @@ void DeformTet::runASAP_SurfaceQuality_test() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -5330,15 +5331,15 @@ void DeformTet::runASAP_SurfaceQuality_test2() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -5861,15 +5862,15 @@ void DeformTet::runASAP_Hybrid_SL_SQ() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -6281,15 +6282,15 @@ void DeformTet::runASAP_Hybrid_SL_SQ_test2() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -6632,15 +6633,15 @@ void DeformTet::runASAP_Hybrid_SR_SQ() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -7156,15 +7157,15 @@ void DeformTet::runASAP_Hybrid_SL_SR() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
@@ -7526,15 +7527,15 @@ void DeformTet::runASAP_Hybrid_SL_SR_SQ() {
 		// Define variables
 		Eigen::SparseMatrix<double> matrix_A_4x;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4x;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4x;
+		S3SparseLDLT Solver_ASAP_4x;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4y;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4y;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4y;
+		S3SparseLDLT Solver_ASAP_4y;
 		//
 		Eigen::SparseMatrix<double> matrix_A_4z;
 		Eigen::SparseMatrix<double> matrix_A_transpose_4z;
-		Eigen::SimplicialLDLT <Eigen::SparseMatrix<double>> Solver_ASAP_4z;
+		S3SparseLDLT Solver_ASAP_4z;
 		// Initialize variables
 		matrix_A_4x.resize((5 * tet_Num + neighborScale_face_num), (node_Num + tet_Num));
 		matrix_A_transpose_4x.resize((node_Num + tet_Num), (5 * tet_Num + neighborScale_face_num));
