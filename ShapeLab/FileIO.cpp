@@ -1,5 +1,8 @@
 #pragma once
 #include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <limits>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cstdio>
@@ -19,6 +22,13 @@ bool FileIO::save_scalar_field_cache(QMeshPatch* tetPatch, const std::string& mo
         std::cerr << "[Cache] cannot write scalar field to " << path << "\n";
         return false;
     }
+    // max_digits10 (17 for IEEE 754 double) guarantees every distinct double has a
+    // unique decimal representation. scientific avoids fixed-notation truncation.
+    // Without this, default precision is 6 digits — slicing isovalue extraction
+    // would silently diverge at the 7th digit on cached vs fresh runs.
+    out << std::setprecision(std::numeric_limits<double>::max_digits10) << std::scientific;
+    out << "# scalar field cache for model '" << model_name
+        << "', double precision, format: <node_index> <scalar>\n";
     int n = 0;
     for (GLKPOSITION Pos = tetPatch->GetNodeList().GetHeadPosition(); Pos;) {
         QMeshNode* node = (QMeshNode*)tetPatch->GetNodeList().GetNext(Pos);
@@ -40,18 +50,27 @@ bool FileIO::load_scalar_field_cache(QMeshPatch* tetPatch, const std::string& mo
         nodeByIndex[node->GetIndexNo()] = node;
     }
 
+    std::string line;
     int idx = 0, n = 0;
     double val = 0.0;
-    while (in >> idx >> val) {
+    while (std::getline(in, line)) {
+        if (line.empty() || line[0] == '#') continue;
+        std::istringstream iss(line);
+        if (!(iss >> idx >> val)) continue;
         auto it = nodeByIndex.find(idx);
         if (it != nodeByIndex.end()) {
             it->second->scalarField = val;
             ++n;
         }
     }
+    if (n != (int)nodeByIndex.size()) {
+        std::cerr << "[Cache] WARNING: loaded " << n << " of " << nodeByIndex.size()
+                  << " expected nodes — cache may be stale (regenerate by deleting "
+                  << path << ")\n";
+    }
     std::cout << "[Cache] loaded " << n << "/" << nodeByIndex.size()
               << " node scalars from " << path << "\n";
-    return n > 0;
+    return n == (int)nodeByIndex.size();
 }
 
 //output the boundary surface mash of volume model
