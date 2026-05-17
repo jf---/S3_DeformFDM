@@ -1,4 +1,5 @@
 #include <string>
+#include "Paths.h"
 #include <fstream>
 #include <iostream>
 #include <cstring>
@@ -412,17 +413,17 @@ void SupportGeneration::outputMaterial_4_envelopHullGeneration() {
 			supportRay_Patch->drawThisPatch = true;
 	}
 	this->_enlarge_convexHull(convexHull_patch);
-	std::string supportConvex_dir = "../DataSet/support_convex/" + m_tetPatch->patchName + "_ConvexHull";
+	std::string supportConvex_dir = Paths::dataset("support_convex/") + m_tetPatch->patchName + "_ConvexHull";
 	this->_output_oneSurfaceMesh(convexHull_patch, supportConvex_dir);
 	std::cout << "Output _convexHull_ of model for support generation." << std::endl;
 	std::cout << supportConvex_dir << std::endl;
 
-	std::string tetModel_surfac_dir = "../DataSet/support_convex/" + m_tetPatch->patchName + "_tetSurface";
+	std::string tetModel_surfac_dir = Paths::dataset("support_convex/") + m_tetPatch->patchName + "_tetSurface";
 	this->_output_tetraMesh_boundary(m_tetPatch, tetModel_surfac_dir);
 	std::cout << "Output _boundary surface_ of Tet model for support generation." << std::endl;
 	std::cout << tetModel_surfac_dir << std::endl;
 
-	std::string tetModel_support_polyline_dir = "../DataSet/support_convex/" + m_tetPatch->patchName + "_support_polyline";
+	std::string tetModel_support_polyline_dir = Paths::dataset("support_convex/") + m_tetPatch->patchName + "_support_polyline";
 	this->_output_support_polyline(supportPoly_patch, tetModel_support_polyline_dir);
 	std::cout << "Output support polyline for initial guess of support generation." << std::endl;
 	std::cout << tetModel_support_polyline_dir << std::endl;
@@ -440,7 +441,7 @@ void SupportGeneration::outputMaterial_4_envelopHullGeneration_plus() {
 
 	//after doing the remesh in Meshlab
 	//combine the convexHull (enlarged + remeshed) with original mesh
-	std::string offMesh_dir = "../DataSet/support_convex/" + m_tetPatch->patchName + "_supportSpace";
+	std::string offMesh_dir = Paths::dataset("support_convex/") + m_tetPatch->patchName + "_supportSpace";
 	this->_output_combined_offMesh(tet_surface, remeshed_CH, offMesh_dir);
 	std::cout << "Output combined_offMesh of model for support generation." << std::endl;
 	std::cout << offMesh_dir << std::endl;
@@ -792,7 +793,7 @@ void SupportGeneration::boundary_Detection() {
 	}
 
 	//generate and output hollowed support TET
-	std::string hollowed_supportTet_dir = "../DataSet/TET_MODEL/" + m_tetPatch->patchName + "_supportTet_hollowed";
+	std::string hollowed_supportTet_dir = Paths::dataset("TET_MODEL/") + m_tetPatch->patchName + "_supportTet_hollowed";
 	this->_hollow_tetSupport_generation(m_tetSupport, hollowed_supportTet_dir);
 
 	//for (GLKPOSITION Pos = m_tetSupport->GetFaceList().GetHeadPosition(); Pos;) {
@@ -1353,7 +1354,7 @@ void SupportGeneration::organize_compatibleLayer_Index(PolygenMesh* compatible_i
 
 void SupportGeneration::output_compatibleLayer_4_remesh(PolygenMesh* compatible_isoLayerSet) {
 
-	std::string unremeshed_isoLayer_dir = "../DataSet/remesh_operation/input";
+	std::string unremeshed_isoLayer_dir = Paths::dataset("remesh_operation/input");
 	this->_remove_allFile_in_Dir(unremeshed_isoLayer_dir);
 
 	for (GLKPOSITION posMesh = compatible_isoLayerSet->GetMeshList().GetHeadPosition(); posMesh != nullptr;) {
@@ -1438,7 +1439,7 @@ void SupportGeneration::update_inputMesh_4treeSkeleton_Generation(
 
 void SupportGeneration::_input_remeshed_compatibleLayer(PolygenMesh* compatible_isoLayerSet) {
 
-	std::string remeshed_isoLayer_dir = "../DataSet/remesh_operation/output";
+	std::string remeshed_isoLayer_dir = Paths::dataset("remesh_operation/output");
 	std::vector<std::string> remeshedLayer_FileCell;// File name table
 	this->_natSort(remeshed_isoLayer_dir, remeshedLayer_FileCell);
 
@@ -2927,7 +2928,7 @@ bool SupportGeneration::_planeCutSurfaceMesh_delete(
 
 void SupportGeneration::output_slimSupport_inital_4_remesh(PolygenMesh* sSupport_init_isoLayerSet) {
 
-	std::string unremeshed_isoLayer_dir = "../DataSet/remesh_operation/layers_unremeshed";
+	std::string unremeshed_isoLayer_dir = Paths::dataset("remesh_operation/layers_unremeshed");
 	this->_remove_allFile_in_Dir(unremeshed_isoLayer_dir);
 
 	for (GLKPOSITION posMesh = sSupport_init_isoLayerSet->GetMeshList().GetHeadPosition(); posMesh != nullptr;) {

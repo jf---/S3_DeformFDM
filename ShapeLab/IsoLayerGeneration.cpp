@@ -1,4 +1,5 @@
 #include <fstream>
+#include "Paths.h"
 
 #include "IsoLayerGeneration.h"
 
@@ -459,7 +460,7 @@ void IsoLayerGeneration::smoothingIsoSurface(PolygenMesh* isoSurface) {
 //
 //	if (!isRun) return;
 //
-//	std::string unremeshed_isoLayer_dir = "../DataSet/remesh_operation/layers_unremeshed/";
+//	std::string unremeshed_isoLayer_dir = Paths::dataset("remesh_operation/layers_unremeshed/");
 //	this->_remove_allFile_in_Dir(unremeshed_isoLayer_dir);
 //
 //	for (GLKPOSITION posMesh = isoSurface->GetMeshList().GetHeadPosition(); posMesh != nullptr;) {
@@ -477,7 +478,7 @@ void IsoLayerGeneration::smoothingIsoSurface(PolygenMesh* isoSurface) {
 //
 //	if (!isRun) return;
 //
-//	std::string unremeshed_isoLayer_dir = "../DataSet/remesh_operation/layers_unremeshed/";
+//	std::string unremeshed_isoLayer_dir = Paths::dataset("remesh_operation/layers_unremeshed/");
 //	this->_remove_allFile_in_Dir(unremeshed_isoLayer_dir);
 //
 //	for (GLKPOSITION posMesh = isoSurface->GetMeshList().GetHeadPosition(); posMesh != nullptr;) {

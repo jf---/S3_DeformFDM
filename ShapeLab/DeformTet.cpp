@@ -1,4 +1,5 @@
 #include <Eigen/Eigen>
+#include "Paths.h"
 
 #include "DeformTet.h"
 #include "PrincipleStressField.h"
@@ -361,7 +362,7 @@ void DeformTet::_detectBottomTet(double threshold) {
 void DeformTet::_input_VoxelOrder() {
 
 	char filename[1024];
-	std::sprintf(filename, "%s%s%s", "../DataSet/support_less_initial_guess/", tetModel_Name.c_str(), "_SL_initialGuess.txt");
+	std::sprintf(filename, "%s%s%s", Paths::dataset("support_less_initial_guess/").c_str(), tetModel_Name.c_str(), "_SL_initialGuess.txt");
 	std::cout << "\nvoxel order is read from:\n" << filename << std::endl;
 
 	FILE* fp;   char linebuf[256];  int i_temp = 0;
@@ -502,7 +503,7 @@ void DeformTet::_input_VoxelOrder() {
 void DeformTet::_input_HeatField() {
 
 	char filename[1024];
-	std::sprintf(filename, "%s%s%s", "../DataSet/support_less_initial_guess/", tetModel_Name.c_str(), "_HF_initialGuess.txt");
+	std::sprintf(filename, "%s%s%s", Paths::dataset("support_less_initial_guess/").c_str(), tetModel_Name.c_str(), "_HF_initialGuess.txt");
 	std::cout << "\nvoxel order is read from:\n" << filename << std::endl;
 
 	FILE* fp;   char linebuf[256];  int i_temp = 0;

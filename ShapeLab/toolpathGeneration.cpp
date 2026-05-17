@@ -1,4 +1,5 @@
 #include "toolpathgeneration.h"
+#include "Paths.h"
 #include <iostream>
 #include <fstream>
 #include "GLKGeometry.h"
@@ -20,7 +21,7 @@ toolpathGeneration::~toolpathGeneration() {}
 
 void toolpathGeneration::_input_remeshed_init_slimSupport_layers(PolygenMesh* m_isoLayerSet) {
 
-	std::string remeshed_isoLayer_dir = "../DataSet/remesh_operation/layers_remeshed";
+	std::string remeshed_isoLayer_dir = Paths::dataset("remesh_operation/layers_remeshed");
 	std::vector<std::string> remeshedLayer_FileCell;// File name table
 	this->_getFileName_Set(remeshed_isoLayer_dir, remeshedLayer_FileCell);
 
@@ -633,9 +634,9 @@ void toolpathGeneration::resampleToolpath(QMeshPatch* patch) {
 //
 //	if (!onORoff) return;
 //
-//	std::string TOOLPATH_waypoint_dir = "../DataSet/TOOL_PATH/";
+//	std::string TOOLPATH_waypoint_dir = Paths::dataset("TOOL_PATH/");
 //	this->_remove_allFile_in_Dir(TOOLPATH_waypoint_dir);
-//	std::string CURVED_layer_dir = "../DataSet/CURVED_LAYER/";
+//	std::string CURVED_layer_dir = Paths::dataset("CURVED_LAYER/");
 //	this->_remove_allFile_in_Dir(CURVED_layer_dir);
 //
 //	std::vector<QMeshPatch*> toolpath_list;
@@ -1420,7 +1421,7 @@ Eigen::MatrixXd toolpathGeneration::_read_stressField() {
 
 	char filename[1024];
 	//bunny_cut6
-	std::sprintf(filename, "%s%s%s", "../DataSet/fabricationTest/test_stressField/", "armadillo4", "_stressField.txt");
+	std::sprintf(filename, "%s%s%s", Paths::dataset("fabricationTest/test_stressField/").c_str(), "armadillo4", "_stressField.txt");
 	std::cout << "\nStress Field is read from:\n" << filename << std::endl;
 
 	FILE* fp;   char linebuf[256];  int i_temp = 0;

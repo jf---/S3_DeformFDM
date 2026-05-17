@@ -1,11 +1,11 @@
 #include "MainWindow.h"
+#include "Paths.h"
 #include <QApplication>
 #include <QString>
 #include <QByteArray>
 #include <QFileInfo>
 #include <iostream>
 #include <cstring>
-#include <unistd.h>
 
 static void print_usage(const char* exe) {
     std::cerr <<
@@ -36,21 +36,16 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Anchor every DataSet/ lookup to the project root, discovered by
+    // walking up from argv[0] until a sibling DataSet/ appears. This
+    // replaces the previous hack of chdir'ing to build/ so the hardcoded
+    // "../DataSet/..." strings happened to resolve.
+    Paths::init(argv[0]);
+    std::cerr << "[Paths] project root: " << Paths::root() << "\n";
+
     if (headless) {
-        // Resolve model_path to absolute BEFORE chdir.
         QFileInfo fi(model_path);
         if (fi.isRelative()) model_path = fi.absoluteFilePath();
-        // The slot handlers use hardcoded "../DataSet/..." paths which only
-        // resolve correctly when cwd is a direct subdirectory of the project
-        // root. Binary lives at build/ShapeLab/ShapeLab, so chdir up one
-        // level to build/ — then `..` is the project root and DataSet is
-        // beside it.
-        QString exe_dir = QFileInfo(QString::fromLocal8Bit(argv[0])).absolutePath();
-        QString cwd_target = QFileInfo(exe_dir).absolutePath();  // parent of exe_dir
-        if (chdir(cwd_target.toLocal8Bit().constData()) != 0) {
-            std::cerr << "[headless] warning: chdir to " << cwd_target.toStdString()
-                      << " failed\n";
-        }
     }
 
     QApplication a(argc, argv);

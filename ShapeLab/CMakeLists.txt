@@ -12,6 +12,7 @@ add_executable(ShapeLab
     toolpathGeneration.cpp
     GcodeGeneration.cpp
     Graph.cpp
+    Paths.cpp
     Remesher.cpp
     MainWindow.ui
     ShapeLab.qrc
@@ -47,7 +48,7 @@ set_target_properties(ShapeLab PROPERTIES
     WIN32_EXECUTABLE FALSE
 )
 
-add_executable(remesh_smoketest remesh_smoketest.cpp Remesher.cpp)
+add_executable(remesh_smoketest remesh_smoketest.cpp Remesher.cpp Paths.cpp)
 target_link_libraries(remesh_smoketest PRIVATE vcglib::vcglib Eigen3::Eigen)
 target_include_directories(remesh_smoketest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(remesh_smoketest PROPERTIES

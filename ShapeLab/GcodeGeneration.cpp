@@ -1,4 +1,5 @@
 #include <string>
+#include "Paths.h"
 #include <iostream>
 #include <sys/stat.h>
 #include <cstdio>
@@ -243,7 +244,7 @@ void GcodeGeneration::_readCncData(int input_Step) {
     char filename[1024];
 
     for (int i = 0; i < CNCfileSet.size(); i++) {
-        sprintf(filename, "%s%s%s", "../DataSet/CNC_MODEL/cnc_assembly_", CNCfileSet[i].c_str(), ".obj");
+        sprintf(filename, "%s%s%s", Paths::dataset("CNC_MODEL/cnc_assembly_").c_str(), CNCfileSet[i].c_str(), ".obj");
         std::cout << "input " << CNCfileSet[i].data() << " from: " << filename << std::endl;
 
         QMeshPatch* cncPatch = new QMeshPatch;
@@ -628,7 +629,7 @@ void GcodeGeneration::_cal_Width() {
 void GcodeGeneration::_output_DHW() {
 
     if (m_outputDHW == false) return;
-    std::string testFile_Dir = "../DataSet/fabricationTest/test_DHW/";
+    std::string testFile_Dir = Paths::dataset("fabricationTest/test_DHW/");
     this->_remove_allFile_in_Dir(testFile_Dir);
 
     std::cout << "------------------------------------------- Waypoint DHW Data Writing ..." << std::endl;
@@ -1794,7 +1795,7 @@ void GcodeGeneration::testXYZBCE(bool testXYZBC_E_switch) {
     if (testXYZBC_E_switch == false)	return;
     std::cout << "------------------------------------------- XYZBCD Data Writing ..." << std::endl;
 
-    std::string testData_Dir = "../DataSet/fabricationTest/test_XYZBCE/";
+    std::string testData_Dir = Paths::dataset("fabricationTest/test_XYZBCE/");
     this->_remove_allFile_in_Dir(testData_Dir);
 
     for (GLKPOSITION Pos = m_Waypoints->GetMeshList().GetHeadPosition(); Pos;) {
@@ -2845,7 +2846,7 @@ void GcodeGeneration::feedrateOpt() {
 //    double E_PumpCompensateNewE = 10;			// The extruder pump compensate for new type layer Xmm
 //
 //    char targetFilename[1024];
-//    std::sprintf(targetFilename, "%s%s", "../DataSet/G_CODE/", GcodeDir.c_str());
+//    std::sprintf(targetFilename, "%s%s", Paths::dataset("G_CODE/").c_str(), GcodeDir.c_str());
 //    FILE* fp = fopen(targetFilename, "w");
 //    if (!fp) {
 //        perror("Couldn't open the directory");
@@ -3090,7 +3091,7 @@ void GcodeGeneration::writeGcode(std::string GcodeDir) {
     double E_PumpCompensateNewE = 4;			// The extruder pump compensate for new type layer Xmm
 
     char targetFilename[1024];
-    std::sprintf(targetFilename, "%s%s", "../DataSet/G_CODE/", GcodeDir.c_str());
+    std::sprintf(targetFilename, "%s%s", Paths::dataset("G_CODE/").c_str(), GcodeDir.c_str());
     FILE* fp = fopen(targetFilename, "w");
     if (!fp) {
         perror("Couldn't open the directory");
@@ -3296,7 +3297,7 @@ void GcodeGeneration::writeGcode(std::string GcodeDir) {
 void GcodeGeneration::readGcodeFile(Eigen::MatrixXf& Gcode_Table, std::string FileName) {
 
     char targetFilename[1024];
-    std::sprintf(targetFilename, "%s%s", "../DataSet/G_CODE/", FileName.c_str());
+    std::sprintf(targetFilename, "%s%s", Paths::dataset("G_CODE/").c_str(), FileName.c_str());
     FILE* fp; char linebuf[2048];
     double machine_X = 0.0, machine_Y = 0.0, machine_Z = 300.0, machine_B = 0.0, machine_C = 0.0;
     fp = fopen(targetFilename, "r");
@@ -3451,7 +3452,7 @@ void GcodeGeneration::readGcodeFile(Eigen::MatrixXf& Gcode_Table, std::string Fi
 void GcodeGeneration::readGcodeFile_newConfig(Eigen::MatrixXf& Gcode_Table, std::string FileName) {
 
     char targetFilename[1024];
-    std::sprintf(targetFilename, "%s%s", "../DataSet/G_CODE/", FileName.c_str());
+    std::sprintf(targetFilename, "%s%s", Paths::dataset("G_CODE/").c_str(), FileName.c_str());
     FILE* fp; char linebuf[2048];
     double machine_X = 0.0, machine_Y = 0.0, machine_Z = 300.0, machine_B = 0.0, machine_C = 0.0;
     fp = fopen(targetFilename, "r");

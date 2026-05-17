@@ -1,4 +1,5 @@
 #include "PrincipleStressField.h"
+#include "Paths.h"
 #include <fstream>
 
 #define TENSILE 0
@@ -19,7 +20,7 @@ bool PrincipleStressField::InputFEMResult(std::string filename)
 	char* p = strtok(cstr, split);
 
 	char input_filename[256];
-	strcpy(input_filename, "../DataSet/fem_result/");
+	strcpy(input_filename, Paths::dataset("fem_result/").c_str());
 	strcat(input_filename, cstr);
 	char filetype[64];
 	strcpy(filetype, ".txt");
@@ -75,7 +76,7 @@ bool PrincipleStressField::InputFEMResult_stressLine(std::string filename)
 {
 
 	// read FEA analysis result with stress tensor
-	std::string stressPath = "../DataSet/fem_result/" + filename + ".txt";
+	std::string stressPath = Paths::dataset("fem_result/") + filename + ".txt";
 	char* stressPath_char = new char[stressPath.length() + 1]; strcpy(stressPath_char, stressPath.c_str());
 	FILE* fp = fopen(stressPath_char, "r");
 	if (!fp) { printf("Can not open the field data file\n"); return false; }
@@ -245,7 +246,7 @@ void PrincipleStressField::PrincipalStressAnalysis(bool ABSResult, bool isTensil
 bool PrincipleStressField::PrincipalStressRead(std::string filename) {
 
 	// read FEA analysis result with stress tensor
-	std::string stressPath = "../DataSet/fem_result/" + filename + ".txt";
+	std::string stressPath = Paths::dataset("fem_result/") + filename + ".txt";
 	char* stressPath_char = new char[stressPath.length() + 1]; strcpy(stressPath_char, stressPath.c_str());
 	FILE* fp = fopen(stressPath_char, "r");
 	if (!fp) { printf("Can not open the field data file\n"); return false; }

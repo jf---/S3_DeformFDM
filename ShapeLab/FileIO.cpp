@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include "Paths.h"
 #include <sstream>
 #include <iomanip>
 #include <limits>
@@ -12,7 +13,7 @@
 #include "../GLKLib/GLKGeometry.h"
 
 std::string FileIO::scalar_field_cache_path(const std::string& model_name) {
-    return std::string("../DataSet/fem_result/") + model_name + "_scalar.txt";
+    return std::string(Paths::dataset("fem_result/")) + model_name + "_scalar.txt";
 }
 
 bool FileIO::save_scalar_field_cache(QMeshPatch* tetPatch, const std::string& model_name) {
@@ -151,7 +152,7 @@ void FileIO::changeTet2Surface(PolygenMesh* io_Source, std::string path) {
 //output the curved layers with splited ones OR not
 void FileIO::outputIsoSurface(PolygenMesh* isoSurface, bool isSplit) {
 
-	std::string unremeshed_isoLayer_dir = "../DataSet/remesh_operation/layers_unremeshed/";
+	std::string unremeshed_isoLayer_dir = Paths::dataset("remesh_operation/layers_unremeshed/");
 	this->_remove_allFile_in_Dir(unremeshed_isoLayer_dir);
 
 	int layer_index = 0; std::string LAYER_dir;
@@ -399,9 +400,9 @@ void FileIO::output_TetMesh(QMeshPatch* tetMesh, std::string path) {
 
 void FileIO::output_toolpath(PolygenMesh* toolPath) {
 
-	std::string TOOLPATH_waypoint_dir = "../DataSet/TOOL_PATH/";
+	std::string TOOLPATH_waypoint_dir = Paths::dataset("TOOL_PATH/");
 	this->_remove_allFile_in_Dir(TOOLPATH_waypoint_dir);
-	std::string CURVED_layer_dir = "../DataSet/CURVED_LAYER/";
+	std::string CURVED_layer_dir = Paths::dataset("CURVED_LAYER/");
 	this->_remove_allFile_in_Dir(CURVED_layer_dir);
 
 	std::vector<QMeshPatch*> toolpath_list;
@@ -585,7 +586,7 @@ int FileIO::_getSplitNumber_with_CompatibleLayer_ind(
 //can only consider the initial layer toolpath
 void FileIO::output_toolpath_compatible(PolygenMesh* toolPath) {
 
-	std::string TOOLPATH_waypoint_dir = "../DataSet/tempUse/compatible_toolpath/";
+	std::string TOOLPATH_waypoint_dir = Paths::dataset("tempUse/compatible_toolpath/");
 	this->_remove_allFile_in_Dir(TOOLPATH_waypoint_dir);
 
 	int min_CompatibleLayer_ind = 1000000; int max_CompatibleLayer_ind = -1000000;
@@ -662,7 +663,7 @@ void FileIO::outputComparison_VectorField_vs_Objective(PolygenMesh* tet_Model, i
 
 	std::string model_Name = tet_Model->getModelName();
 	QMeshPatch* tet_patch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
-	std::string baseDir = "../DataSet/fabricationTest/test_vector_VS_objective/";
+	std::string baseDir = Paths::dataset("fabricationTest/test_vector_VS_objective/");
 
 	char targetFilename[1024];
 	//SUPPORT_LESS
@@ -767,7 +768,7 @@ void FileIO::output_Quaternion_VectorField(PolygenMesh* tet_Model) {
 
 	std::string model_Name = tet_Model->getModelName();
 	QMeshPatch* tet_patch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
-	std::string baseDir = "../DataSet/fabricationTest/test_QvectorField/";
+	std::string baseDir = Paths::dataset("fabricationTest/test_QvectorField/");
 
 	char targetFilename[1024];
 
@@ -811,7 +812,7 @@ void FileIO::output_ScalarOrHeight_field(PolygenMesh* tet_Model, bool output_sca
 
 	std::string model_Name = tet_Model->getModelName();
 	QMeshPatch* tet_patch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
-	std::string baseDir = "../DataSet/fabricationTest/test_ScalrOrHeightField/";
+	std::string baseDir = Paths::dataset("fabricationTest/test_ScalrOrHeightField/");
 
 	char targetFilename[1024];
 	if (output_scalarField) {
@@ -855,7 +856,7 @@ void FileIO::output_materialRotation_4CAE(PolygenMesh* tet_Model) {
 
 	std::string model_Name = tet_Model->getModelName();
 	QMeshPatch* tet_patch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
-	std::string baseDir = "../DataSet/fabricationTest/test_materialOrientation/";
+	std::string baseDir = Paths::dataset("fabricationTest/test_materialOrientation/");
 
 	char targetFilename[1024];
 	std::sprintf(targetFilename, "%s%s%s", baseDir.c_str(), model_Name.c_str(), "_materialOrientation.txt");
@@ -932,7 +933,7 @@ void FileIO::output_userWaypoints(PolygenMesh* waypointSet, std::string TOOLPATH
 void FileIO::output_stressField(PolygenMesh* tet_Model) {
 
 	QMeshPatch* tet_patch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
-	std::string baseDir = "../DataSet/fabricationTest/test_stressField/";
+	std::string baseDir = Paths::dataset("fabricationTest/test_stressField/");
 
 	std::string finalDir = baseDir + tet_Model->getModelName() + "_stressField.txt";
 	std::ofstream stressField(finalDir);

@@ -1,5 +1,6 @@
 ﻿#include <QFileDialog>
 #include <QtDebug>
+#include "Paths.h"
 #include <QDesktopWidget>
 #include <QCoreApplication>
 #include <QMimeData>
@@ -215,7 +216,7 @@ void MainWindow::createActions()
 
 void MainWindow::open()
 {
-    QString filenameStr = QFileDialog::getOpenFileName(this, tr("Open File,"), "../DataSet/TET_MODEL/", tr(""));
+    QString filenameStr = QFileDialog::getOpenFileName(this, tr("Open File,"), QString::fromStdString(Paths::dataset("TET_MODEL/")), tr(""));
     QFileInfo fileInfo(filenameStr);
     QString fileSuffix = fileInfo.suffix();
     QByteArray filenameArray = filenameStr.toLatin1();
@@ -319,12 +320,12 @@ void MainWindow::runHeadlessPipeline(const QString& tet_path, const QString& cas
     output_Toolpath_set();
 
     std::cout << "[headless] post: combine OBJs per directory\n";
-    Remesher::combine_directory("../DataSet/remesh_operation/layers_unremeshed",
-                                "../DataSet/remesh_operation/layers_unremeshed_combined.obj");
-    Remesher::combine_directory("../DataSet/remesh_operation/layers_remeshed",
-                                "../DataSet/remesh_operation/layers_remeshed_combined.obj");
-    Remesher::combine_directory("../DataSet/CURVED_LAYER",
-                                "../DataSet/CURVED_LAYER_combined.obj");
+    Remesher::combine_directory(Paths::dataset("remesh_operation/layers_unremeshed"),
+                                Paths::dataset("remesh_operation/layers_unremeshed_combined.obj"));
+    Remesher::combine_directory(Paths::dataset("remesh_operation/layers_remeshed"),
+                                Paths::dataset("remesh_operation/layers_remeshed_combined.obj"));
+    Remesher::combine_directory(Paths::dataset("CURVED_LAYER"),
+                                Paths::dataset("CURVED_LAYER_combined.obj"));
 
     std::cout << "[headless] done\n";
 }
@@ -385,7 +386,7 @@ void MainWindow::saveSelection()
 	char* p = strtok(cstr, split);
 
 	char output_filename[256];
-	strcpy(output_filename, "../DataSet/selection_file/");
+	strcpy(output_filename, Paths::dataset("selection_file/").c_str());
 	strcat(output_filename, cstr);
 	char filetype[64];
 	strcpy(filetype, ".txt");
@@ -428,7 +429,7 @@ bool MainWindow::readSelection()
 	char* p = strtok(cstr, split);
 
 	char input_filename[256];
-    strcpy(input_filename, "../DataSet/selection_file/");
+    strcpy(input_filename, Paths::dataset("selection_file/").c_str());
 	strcat(input_filename, cstr);
 	char filetype[64];
 	strcpy(filetype, ".txt");
@@ -1100,7 +1101,7 @@ void MainWindow::run_tet2surface() {
         std::cerr << "There is no Tet mesh, please check." << std::endl; return;
     }
     FileIO* IO_operator = new FileIO();
-    std::string surface_dir = "../DataSet/tempUse/";
+    std::string surface_dir = Paths::dataset("tempUse/");
     IO_operator->changeTet2Surface(tet_Model, surface_dir);
     delete IO_operator;
 
@@ -1115,7 +1116,7 @@ void MainWindow::output_deformedTet() {
     }
     QMeshPatch* tetPatch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
     FileIO* IO_operator = new FileIO();
-    std::string tet_dir = "../DataSet/tempUse/";
+    std::string tet_dir = Paths::dataset("tempUse/");
     IO_operator->output_TetMesh(tetPatch, tet_dir);
     delete IO_operator;
 
@@ -1130,7 +1131,7 @@ void MainWindow::output_discreteTet() {
     }
     QMeshPatch* tetPatch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
     FileIO* IO_operator = new FileIO();
-    std::string tet_dir = "../DataSet/tempUse/";
+    std::string tet_dir = Paths::dataset("tempUse/");
     IO_operator->output_discreteTet_beforeBlending(tetPatch, tet_dir);
     delete IO_operator;
     std::cout << "Finish outputing discrete tet mesh. Please Clear all, and open a '_discrete.tet' file." << std::endl;
@@ -1144,7 +1145,7 @@ void MainWindow::output_discreteTet_obj() {
     }
     QMeshPatch* tetPatch = (QMeshPatch*)tet_Model->GetMeshList().GetHead();
     FileIO* IO_operator = new FileIO();
-    std::string tet_dir = "../DataSet/tempUse/";
+    std::string tet_dir = Paths::dataset("tempUse/");
     IO_operator->output_discreteTet_obj_beforeBlending(tetPatch, tet_dir);
     delete IO_operator;
 
@@ -2195,8 +2196,8 @@ void MainWindow::output_IsoLayer_set() {
     // Replaces the upstream remesh_slimmedLayer.bat → MeshLab pipeline with an
     // in-process vcglib pass using the same isotropic-remesh parameters as the
     // .mlx (5 iter, target len 2.0, crease 30°, all sub-steps on).
-    const std::string in_dir  = "../DataSet/remesh_operation/layers_unremeshed";
-    const std::string out_dir = "../DataSet/remesh_operation/layers_remeshed";
+    const std::string in_dir  = Paths::dataset("remesh_operation/layers_unremeshed");
+    const std::string out_dir = Paths::dataset("remesh_operation/layers_remeshed");
     Remesher::remesh_directory(in_dir, out_dir);
 }
 
@@ -2597,7 +2598,7 @@ void MainWindow::_input_CNC_part() {
     char filename[1024];
 
     for (int i = 0; i < CNCfileSet.size(); i++) {
-        sprintf(filename, "%s%s%s", "../DataSet/CNC_MODEL/", CNCfileSet[i].c_str(), ".obj");
+        sprintf(filename, "%s%s%s", Paths::dataset("CNC_MODEL/").c_str(), CNCfileSet[i].c_str(), ".obj");
         cout << "input " << CNCfileSet[i].data() << " from: " << filename << endl;
 
         QMeshPatch* cncPatch = new QMeshPatch;
@@ -2817,13 +2818,13 @@ void MainWindow::initial_Guess_SupportEnvelope_Generation_plus() {
 
     //input 2 source mesh: tet_surface , remeshed convexHull
     char filename[1024];
-    sprintf(filename, "%s%s%s", "../DataSet/support_convex/", model->patchName.c_str(),"_ConvexHull.obj");
+    sprintf(filename, "%s%s%s", Paths::dataset("support_convex/").c_str(), model->patchName.c_str(),"_ConvexHull.obj");
     QMeshPatch* remeshedCH = new QMeshPatch;
     remeshedCH->SetIndexNo(supportModelSet->GetMeshList().GetCount()); //index begin from 0
     supportModelSet->GetMeshList().AddTail(remeshedCH);
     remeshedCH->inputOBJFile(filename, false);
     //
-    sprintf(filename, "%s%s%s", "../DataSet/support_convex/", model->patchName.c_str(), "_tetSurface.obj");
+    sprintf(filename, "%s%s%s", Paths::dataset("support_convex/").c_str(), model->patchName.c_str(), "_tetSurface.obj");
     QMeshPatch* tet_surface = new QMeshPatch;
     tet_surface->SetIndexNo(supportModelSet->GetMeshList().GetCount()); //index begin from 0
     supportModelSet->GetMeshList().AddTail(tet_surface);
@@ -2855,14 +2856,14 @@ void MainWindow::compatibleLayer_Generation() {
     }
     //input tetSurface mesh
     char filename[1024];
-    sprintf(filename, "%s%s%s", "../DataSet/support_convex/", model->patchName.c_str(), "_tetSurface.obj");
+    sprintf(filename, "%s%s%s", Paths::dataset("support_convex/").c_str(), model->patchName.c_str(), "_tetSurface.obj");
     QMeshPatch* model_surface = new QMeshPatch;
     model_surface->SetIndexNo(supportModelSet->GetMeshList().GetCount()); //index begin from 0
     supportModelSet->GetMeshList().AddTail(model_surface);
     model_surface->inputOBJFile(filename, false);
 
     //input support Tet 
-    sprintf(filename, "%s%s%s", "../DataSet/TET_MODEL/", model->patchName.c_str(), "_supportTet.tet");
+    sprintf(filename, "%s%s%s", Paths::dataset("TET_MODEL/").c_str(), model->patchName.c_str(), "_supportTet.tet");
     PolygenMesh* support_tetModel = this->_buildPolygenMesh(SUPPORT_TET_MODEL, model->patchName + "_Support");
     QMeshPatch* patch_supportTet = new QMeshPatch;
     patch_supportTet->SetIndexNo(support_tetModel->GetMeshList().GetCount()); //index begin from 0
@@ -2873,7 +2874,7 @@ void MainWindow::compatibleLayer_Generation() {
     supportGene->initial(model, model_surface, patch_supportTet);
     
     //avoid detecting boundary repeatly
-    sprintf(filename, "%s%s%s", "../DataSet/TET_MODEL/", model->patchName.c_str(), "_supportTet_hollowed.tet");
+    sprintf(filename, "%s%s%s", Paths::dataset("TET_MODEL/").c_str(), model->patchName.c_str(), "_supportTet_hollowed.tet");
     std::ifstream f(filename);
     if (f.good()) {
         std::cout << model->patchName << "_supportTet_hollowed.tet is existed." << std::endl;
@@ -2883,7 +2884,7 @@ void MainWindow::compatibleLayer_Generation() {
     }
     
     support_tetModel->ClearAll();
-    //sprintf(filename, "%s%s%s", "../DataSet/TET_MODEL/", model->patchName.c_str(), "_supportTet_hollowed.tet");
+    //sprintf(filename, "%s%s%s", Paths::dataset("TET_MODEL/").c_str(), model->patchName.c_str(), "_supportTet_hollowed.tet");
     QMeshPatch* patch_supportTet_hollowed = new QMeshPatch;
     patch_supportTet_hollowed->SetIndexNo(support_tetModel->GetMeshList().GetCount()); //index begin from 0
     support_tetModel->GetMeshList().AddTail(patch_supportTet_hollowed);
@@ -3173,7 +3174,7 @@ void MainWindow::readGcodeSourceData() {
 
     GcodeGene = new GcodeGeneration();
     std::string modelName = ui->lineEdit_SorceDataDir->text().toStdString();
-    std::string FileDir = "../DataSet/fabricationSource/" + modelName;
+    std::string FileDir = Paths::dataset("fabricationSource/") + modelName;
     GcodeGene->initial(isoLayerSet, toolpathSet, cncSet, ui->checkBox_Yup2Zup->isChecked(), FileDir,
         ui->doubleSpinBox_Xmove->value(), ui->doubleSpinBox_Ymove->value(), ui->doubleSpinBox_Zmove->value(),
         ui->doubleSpinBox_toolLength->value(), modelName);
@@ -3201,7 +3202,7 @@ void MainWindow::output_userWaypoints() {
     }
 
     FileIO* IO_operator = new FileIO();
-    std::string surface_dir = "../DataSet/tempUse/waypoint_user/";
+    std::string surface_dir = Paths::dataset("tempUse/waypoint_user/");
     IO_operator->output_userWaypoints(toolpathSet, surface_dir,
                 ui->doubleSpinBox_Xmove->value(),
                 ui->doubleSpinBox_Ymove->value(),
@@ -3330,7 +3331,7 @@ void MainWindow::output_preProcess_waypoints_4_Robot() {
     }
 
     FileIO* IO_operator = new FileIO();
-    std::string robot_Wp_dir = "../DataSet/tempUse/waypoint_robot/";
+    std::string robot_Wp_dir = Paths::dataset("tempUse/waypoint_robot/");
     IO_operator->output_robotWaypoints(toolpathSet, robot_Wp_dir);
     delete IO_operator;
 
@@ -3582,7 +3583,7 @@ void MainWindow::cal_Dist_scanAndmodel() {
 
     this->on_pushButton_clearAll_clicked();
     char filename[1024];
-    std::string packName = "../DataSet/fabricationTest/test_scanning/aligned";
+    std::string packName = Paths::dataset("fabricationTest/test_scanning/aligned");
     PolygenMesh* scanningMeshSet = this->_detectPolygenMesh(SURFACE_MESH);
     if (scanningMeshSet == NULL) {
         scanningMeshSet = this->_buildPolygenMesh(SURFACE_MESH, "Surface_Mesh");
