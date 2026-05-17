@@ -3,9 +3,56 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cstdio>
+#include <unordered_map>
 
 #include "FileIO.h"
 #include "../GLKLib/GLKGeometry.h"
+
+std::string FileIO::scalar_field_cache_path(const std::string& model_name) {
+    return std::string("../DataSet/fem_result/") + model_name + "_scalar.txt";
+}
+
+bool FileIO::save_scalar_field_cache(QMeshPatch* tetPatch, const std::string& model_name) {
+    const std::string path = scalar_field_cache_path(model_name);
+    std::ofstream out(path);
+    if (!out.is_open()) {
+        std::cerr << "[Cache] cannot write scalar field to " << path << "\n";
+        return false;
+    }
+    int n = 0;
+    for (GLKPOSITION Pos = tetPatch->GetNodeList().GetHeadPosition(); Pos;) {
+        QMeshNode* node = (QMeshNode*)tetPatch->GetNodeList().GetNext(Pos);
+        out << node->GetIndexNo() << " " << node->scalarField << "\n";
+        ++n;
+    }
+    std::cout << "[Cache] saved " << n << " node scalars -> " << path << "\n";
+    return true;
+}
+
+bool FileIO::load_scalar_field_cache(QMeshPatch* tetPatch, const std::string& model_name) {
+    const std::string path = scalar_field_cache_path(model_name);
+    std::ifstream in(path);
+    if (!in.is_open()) return false;
+
+    std::unordered_map<int, QMeshNode*> nodeByIndex;
+    for (GLKPOSITION Pos = tetPatch->GetNodeList().GetHeadPosition(); Pos;) {
+        QMeshNode* node = (QMeshNode*)tetPatch->GetNodeList().GetNext(Pos);
+        nodeByIndex[node->GetIndexNo()] = node;
+    }
+
+    int idx = 0, n = 0;
+    double val = 0.0;
+    while (in >> idx >> val) {
+        auto it = nodeByIndex.find(idx);
+        if (it != nodeByIndex.end()) {
+            it->second->scalarField = val;
+            ++n;
+        }
+    }
+    std::cout << "[Cache] loaded " << n << "/" << nodeByIndex.size()
+              << " node scalars from " << path << "\n";
+    return n > 0;
+}
 
 //output the boundary surface mash of volume model
 void FileIO::changeTet2Surface(PolygenMesh* io_Source, std::string path) {

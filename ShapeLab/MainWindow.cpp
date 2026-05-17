@@ -271,19 +271,40 @@ void MainWindow::runHeadlessPipeline(const QString& tet_path, const QString& cas
     std::cout << "[headless] load " << tet_path.toStdString() << "\n";
     _loadTetFile(tet_path);
 
-    // The slot picked by case_name needs to match a runDeformation_*_ASAP slot.
-    // Only SL_SR_SQ (the README's '1.7') is wired right now — extend as needed.
-    std::cout << "[headless] step 1: deformation " << case_name.toStdString() << "\n";
-    if (case_name == "SL_SR_SQ") {
-        runDeformation_SL_SR_SQ_ASAP();
-    } else {
-        std::cerr << "[headless] unknown case '" << case_name.toStdString()
-                  << "'; supported: SL_SR_SQ\n";
-        return;
+    // Cache lookup: if DataSet/fem_result/<model>_scalar.txt exists, load it
+    // and skip the ~20-min ASAP deformation + inverse. Lets iteration on
+    // slicing/remesh/toolpath happen in seconds. Delete the cache file to
+    // force a re-deform.
+    PolygenMesh* tet_model = _detectPolygenMesh(TET_MODEL);
+    QMeshPatch* tet_patch = tet_model ? (QMeshPatch*)tet_model->GetMeshList().GetHead() : nullptr;
+    const std::string model_name = tet_model ? tet_model->getModelName() : "";
+
+    bool used_cache = false;
+    if (tet_patch && !model_name.empty()) {
+        used_cache = FileIO::load_scalar_field_cache(tet_patch, model_name);
     }
 
-    std::cout << "[headless] step 2: inverse deformation\n";
-    inverseDeformation();
+    if (used_cache) {
+        std::cout << "[headless] scalar field cache hit — skipping deformation + inverse\n";
+    } else {
+        // The slot picked by case_name needs to match a runDeformation_*_ASAP slot.
+        // Only SL_SR_SQ (the README's '1.7') is wired right now — extend as needed.
+        std::cout << "[headless] step 1: deformation " << case_name.toStdString() << "\n";
+        if (case_name == "SL_SR_SQ") {
+            runDeformation_SL_SR_SQ_ASAP();
+        } else {
+            std::cerr << "[headless] unknown case '" << case_name.toStdString()
+                      << "'; supported: SL_SR_SQ\n";
+            return;
+        }
+
+        std::cout << "[headless] step 2: inverse deformation\n";
+        inverseDeformation();
+
+        if (tet_patch && !model_name.empty()) {
+            FileIO::save_scalar_field_cache(tet_patch, model_name);
+        }
+    }
 
     std::cout << "[headless] step 3: curved layer generation\n";
     curvedLayer_Generation();

@@ -24,6 +24,13 @@ public:
 	void output_discreteTet_obj_beforeBlending(QMeshPatch* tetMesh, std::string path);
 	void output_materialRotation_4CAE(PolygenMesh* tet_Model);
 
+	// Per-node scalar-field cache, lives next to the FEM stress input
+	// (DataSet/fem_result/<model>_scalar.txt). Lets --headless skip the slow
+	// ASAP deformation + inverse on repeat runs.
+	static bool save_scalar_field_cache(QMeshPatch* tetPatch, const std::string& model_name);
+	static bool load_scalar_field_cache(QMeshPatch* tetPatch, const std::string& model_name);
+	static std::string scalar_field_cache_path(const std::string& model_name);
+
 private:
 	int _remove_allFile_in_Dir(std::string dirPath);
 	bool _splitSingleSurfacePatch_detect(QMeshPatch* each_layer);
