@@ -238,14 +238,7 @@ void MainWindow::open()
     }
 
 	else if (QString::compare(fileSuffix, "tet") == 0) {
-		PolygenMesh *polygenMesh = new PolygenMesh(TET_MODEL);
-		std::cout << filename << std::endl;
-		std::cout << modelName << std::endl;
-		polygenMesh->ImportTETFile(filename, modelName);
-		polygenMesh->BuildGLList(polygenMesh->m_bVertexNormalShading);
-		pGLK->AddDisplayObj(polygenMesh, true);
-		polygenMeshList.AddTail(polygenMesh);
-        this->_updateFrameworkParameter();
+		_loadTetFile(filenameStr);
 	}
 
     updateTree();
@@ -253,6 +246,52 @@ void MainWindow::open()
     shiftToOrigin();
     pGLK->refresh(true);
     pGLK->Zoom_All_in_View();
+}
+
+void MainWindow::_loadTetFile(const QString& path) {
+    QByteArray arr = path.toLatin1();
+    char* filename = arr.data();
+
+    std::string strFilename(filename);
+    std::size_t foundStart = strFilename.find_last_of("/");
+    std::size_t foundEnd = strFilename.find_last_of(".");
+    std::string modelName = strFilename.substr(foundStart + 1, foundEnd - foundStart - 1);
+
+    PolygenMesh* polygenMesh = new PolygenMesh(TET_MODEL);
+    std::cout << filename << std::endl;
+    std::cout << modelName << std::endl;
+    polygenMesh->ImportTETFile(filename, modelName);
+    polygenMesh->BuildGLList(polygenMesh->m_bVertexNormalShading);
+    pGLK->AddDisplayObj(polygenMesh, true);
+    polygenMeshList.AddTail(polygenMesh);
+    _updateFrameworkParameter();
+}
+
+void MainWindow::runHeadlessPipeline(const QString& tet_path, const QString& case_name) {
+    std::cout << "[headless] load " << tet_path.toStdString() << "\n";
+    _loadTetFile(tet_path);
+
+    // The slot picked by case_name needs to match a runDeformation_*_ASAP slot.
+    // Only SL_SR_SQ (the README's '1.7') is wired right now — extend as needed.
+    std::cout << "[headless] step 1: deformation " << case_name.toStdString() << "\n";
+    if (case_name == "SL_SR_SQ") {
+        runDeformation_SL_SR_SQ_ASAP();
+    } else {
+        std::cerr << "[headless] unknown case '" << case_name.toStdString()
+                  << "'; supported: SL_SR_SQ\n";
+        return;
+    }
+
+    std::cout << "[headless] step 2: inverse deformation\n";
+    inverseDeformation();
+
+    std::cout << "[headless] step 3: curved layer generation\n";
+    curvedLayer_Generation();
+
+    std::cout << "[headless] step 3.5: output layers + in-process remesh\n";
+    output_IsoLayer_set();
+
+    std::cout << "[headless] done\n";
 }
 
 void MainWindow::save()

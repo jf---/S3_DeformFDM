@@ -32,6 +32,11 @@ cmd = "./build/ShapeLab/ShapeLab"
 depends-on = ["build"]
 description = "Launch the ShapeLab GUI"
 
+[tasks.headless]
+cmd = "./build/ShapeLab/ShapeLab --headless DataSet/TET_MODEL/bunny_cut6.tet"
+depends-on = ["build"]
+description = "Run the full README pipeline (load → deform → inverse → slice → output+remesh) on bunny_cut6 with zero clicks"
+
 [tasks.clean]
 cmd = "rm -rf build build-debug"
 description = "Remove build directories"

@@ -46,6 +46,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    // Headless entry point: loads tet, runs SL_SR_SQ deformation, inverse,
+    // layer generation, output (auto-remeshes). Used by main.cpp --headless.
+    void runHeadlessPipeline(const QString& tet_path, const QString& case_name = "SL_SR_SQ");
+
 public slots:
 	// Qtimer - defined function
     void doTimerGcodeMoving();
@@ -87,6 +91,7 @@ private:
     PolygenMesh* _detectPolygenMesh(mesh_type type);
     QMeshPatch* _detectPolygenMesh(mesh_type type, std::string patch_name); // detect certain patch by patchName
     void _updateFrameworkParameter();
+    void _loadTetFile(const QString& path);
     /*void _setParameter(int loopTime, S_type caseType, double criticalTet_weight,
         double neighborScale_weight, double regularScale_weight, double globalSmooth_weight,
         double supportFreeAngle, double tensileRegionRatio, double compressRegionRatio);*/
