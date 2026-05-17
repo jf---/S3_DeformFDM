@@ -51,6 +51,25 @@ bool ensure_dir(const std::string& path) {
     return mkdir(path.c_str(), 0755) == 0;
 }
 
+// Delete every .obj under `dir` (non-recursive, top-level only). Returns count.
+// Used to keep layers_remeshed/ free of stale files from prior runs that would
+// otherwise pollute the combined output.
+int wipe_objs(const std::string& dir) {
+    DIR* d = opendir(dir.c_str());
+    if (!d) return 0;
+    int n = 0;
+    struct dirent* e;
+    while ((e = readdir(d)) != nullptr) {
+        std::string name = e->d_name;
+        if (ends_with(name, ".obj") || ends_with(name, ".OBJ")) {
+            std::string p = dir + "/" + name;
+            if (std::remove(p.c_str()) == 0) ++n;
+        }
+    }
+    closedir(d);
+    return n;
+}
+
 } // namespace
 
 bool Remesher::remesh_file(const std::string& input_obj,
@@ -208,6 +227,10 @@ int Remesher::remesh_directory(const std::string& input_dir,
         std::cerr << "[Remesher] cannot create output dir: " << output_dir << "\n";
         return 0;
     }
+    // Clear stale .obj from prior runs — otherwise the combine pass mixes
+    // current output with leftovers (mix of planar + s3 layers in the same dir).
+    int wiped = wipe_objs(output_dir);
+    if (wiped > 0) std::cout << "[Remesher] wiped " << wiped << " stale .obj(s) from " << output_dir << "\n";
 
     DIR* dir = opendir(input_dir.c_str());
     if (!dir) {
