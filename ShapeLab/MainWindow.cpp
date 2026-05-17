@@ -12,7 +12,6 @@
 #include <QStyleFactory>
 #include <fstream>
 #include <Eigen/Eigen>
-#include <Eigen/PardisoSupport>
 #include <dirent.h>
 #include <iostream>
 
@@ -1810,7 +1809,7 @@ void MainWindow::_fixScalarField_surfaceKeepRegion(QMeshPatch* patch, int splitT
         double average_HeightField_init = 0.0;
         double average_HeightField = 0.0;
 
-        double max_HeightField = -INFINITE;
+        double max_HeightField = -std::numeric_limits<double>::infinity();
         for (GLKPOSITION Pos = patch->GetNodeList().GetHeadPosition(); Pos;) {
             QMeshNode* thisNode = (QMeshNode*)patch->GetNodeList().GetNext(Pos);
             if (thisNode->inner) continue;
@@ -2665,7 +2664,7 @@ void MainWindow::_vectorField_2_scalarField(bool Up_Vector_Direction) {
 
     Eigen::SparseMatrix<double> ATA(model->GetNodeNumber(), model->GetNodeNumber());
     ATA = Parameter.transpose() * Parameter;
-    Eigen::PardisoLU <Eigen::SparseMatrix<double>> Solver;
+    Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;
 
     Solver.analyzePattern(ATA);
     Solver.factorize(ATA);

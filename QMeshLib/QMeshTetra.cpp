@@ -100,8 +100,8 @@ bool QMeshTetra::IsInner()
 	}*/
 
 	for (int i = 0; i < 4; i++) {
-		if (GetFaceRecordPtr(i + 1)->GetLeftTetra() == false || 
-			GetFaceRecordPtr(i + 1)->GetRightTetra() == false) {
+		if (GetFaceRecordPtr(i + 1)->GetLeftTetra() == nullptr ||
+			GetFaceRecordPtr(i + 1)->GetRightTetra() == nullptr) {
 			a = false; break;
 		}
 	}

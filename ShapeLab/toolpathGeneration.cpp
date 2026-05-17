@@ -3,7 +3,6 @@
 #include <fstream>
 #include "GLKGeometry.h"
 #include "heatmethodfield.h"
-#include "io.h"
 #include "dirent.h"
 
 toolpathGeneration::toolpathGeneration(PolygenMesh* isoLayerSet, PolygenMesh* toolPathSet,

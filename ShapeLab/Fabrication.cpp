@@ -1,5 +1,4 @@
 #include <Eigen/Eigen>
-#include <Eigen/PardisoSupport>
 
 #include "Fabrication.h"
 #include "GLKGeometry.h"

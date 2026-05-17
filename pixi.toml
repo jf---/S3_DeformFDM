@@ -1,0 +1,37 @@
+[workspace]
+name = "s3-deformfdm"
+description = "macOS/Linux build env for S^3-Slicer (SIGGRAPH Asia 2022). Project-local pixi env avoids global Qt/MKL conflicts."
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[dependencies]
+cmake = ">=3.24"
+ninja = "*"
+qt-main = "5.15.*"
+eigen = "*"
+llvm-openmp = "*"
+
+[target.linux-64.dependencies]
+freeglut = "*"
+
+[tasks.configure]
+cmd = "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$CONDA_PREFIX"
+description = "Configure CMake build (Release)"
+
+[tasks.configure-debug]
+cmd = "cmake -S . -B build-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$CONDA_PREFIX"
+description = "Configure CMake build (Debug)"
+
+[tasks.build]
+cmd = "cmake --build build --parallel"
+depends-on = ["configure"]
+description = "Build all targets"
+
+[tasks.run]
+cmd = "./build/ShapeLab/ShapeLab"
+depends-on = ["build"]
+description = "Launch the ShapeLab GUI"
+
+[tasks.clean]
+cmd = "rm -rf build build-debug"
+description = "Remove build directories"

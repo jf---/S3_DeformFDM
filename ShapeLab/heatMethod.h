@@ -2,7 +2,6 @@
 
 #include "../QMeshLib/PolygenMesh.h"
 #include<Eigen/Eigen>
-#include<Eigen/PardisoSupport>
 #include<vector>
 
 /*

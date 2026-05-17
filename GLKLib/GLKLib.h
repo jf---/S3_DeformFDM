@@ -1,8 +1,14 @@
 #include <iostream>
-#include <../ThirdPartyDependence/glut/glew.h>
-#include <../ThirdPartyDependence/glut/GL.h>
 
-//#pragma comment(lib, "glew32.lib")
+#if defined(__APPLE__)
+#  include <OpenGL/gl.h>
+#elif defined(_WIN32)
+#  include <../ThirdPartyDependence/glut/glew.h>
+#  include <../ThirdPartyDependence/glut/GL.h>
+#else
+#  include <GL/glew.h>
+#  include <GL/gl.h>
+#endif
 
 #include <QOpenGLWidget>
 #include <QVector>

@@ -85,7 +85,7 @@ private:
 private:
     PolygenMesh* _buildPolygenMesh(mesh_type type, std::string name);
     PolygenMesh* _detectPolygenMesh(mesh_type type);
-    QMeshPatch* MainWindow::_detectPolygenMesh(mesh_type type, std::string patch_name); // detect certain patch by patchName
+    QMeshPatch* _detectPolygenMesh(mesh_type type, std::string patch_name); // detect certain patch by patchName
     void _updateFrameworkParameter();
     /*void _setParameter(int loopTime, S_type caseType, double criticalTet_weight,
         double neighborScale_weight, double regularScale_weight, double globalSmooth_weight,

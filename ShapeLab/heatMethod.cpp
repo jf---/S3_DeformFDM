@@ -257,7 +257,7 @@ void heatMethod::_solveHeatField(int BoundaryCondition) {
 		S = I - 100 * t * invVol * WeightMatrix;
 
 		std::cout << "Initialising Sparse Solver..\n";
-		Eigen::PardisoLU <Eigen::SparseMatrix<double>> SolverN;// (PardisoLU/SparseLU)
+		Eigen::SparseLU <Eigen::SparseMatrix<double>> SolverN;// (PardisoLU/SparseLU)
 		SolverN.analyzePattern(S);
 		SolverN.factorize(S);
 		if (SolverN.info() != Eigen::Success)
@@ -288,7 +288,7 @@ void heatMethod::_solveHeatField(int BoundaryCondition) {
 		S = I - 100 * t * invVol * WeightMatrix;
 
 		std::cout << "Initialising Sparse Solver..\n";
-		Eigen::PardisoLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
+		Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
 		Solver.analyzePattern(S);
 		Solver.factorize(S);
 		if (Solver.info() != Eigen::Success)
@@ -526,7 +526,7 @@ void heatMethod::_generateScalarField() {
 	/*Eigen::ColPivHouseholderQR<Eigen::MatrixXd> dec(WeightMatrix);
 	Eigen::VectorXd u = dec.solve(divVector);*/
 
-	Eigen::PardisoLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
+	Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
 
 	Eigen::SparseMatrix<double> S = invVol * WeightMatrix + boundaryCompensator;
 	S = 100 * S;

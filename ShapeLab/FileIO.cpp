@@ -1,7 +1,9 @@
 #pragma once
 #include <fstream>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <cstdio>
 
-#include "io.h"
 #include "FileIO.h"
 #include "../GLKLib/GLKGeometry.h"
 
@@ -225,51 +227,26 @@ void FileIO::_splitSingleSurfacePatch_splitmesh(
 }
 
 int FileIO::_remove_allFile_in_Dir(std::string dirPath) {
+	DIR* dir = opendir(dirPath.c_str());
+	if (!dir) return -1;
 
-	struct _finddata_t fb;   //find the storage structure of the same properties file.
-	std::string path;
-	intptr_t    handle;
-	int  resultone;
-	int   noFile;            // the tag for the system's hidden files
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != nullptr) {
+		const char* name = entry->d_name;
+		if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) continue;
 
-	noFile = 0;
-	handle = 0;
+		std::string path = dirPath + "/" + name;
+		struct stat st;
+		if (stat(path.c_str(), &st) != 0) continue;
 
-	path = dirPath + "/*";
-
-	handle = _findfirst(path.c_str(), &fb);
-
-	//find the first matching file
-	if (handle != -1)
-	{
-		//find next matching file
-		while (0 == _findnext(handle, &fb))
-		{
-			// "." and ".." are not processed
-			noFile = strcmp(fb.name, "..");
-
-			if (0 != noFile)
-			{
-				path.clear();
-				path = dirPath + "/" + fb.name;
-
-				//fb.attrib == 16 means folder
-				if (fb.attrib == 16)
-				{
-					_remove_allFile_in_Dir(path);
-				}
-				else
-				{
-					//not folder, delete it. if empty folder, using _rmdir instead.
-					remove(path.c_str());
-				}
-			}
+		if (S_ISDIR(st.st_mode)) {
+			_remove_allFile_in_Dir(path);
+		} else {
+			std::remove(path.c_str());
 		}
-		// close the folder and delete it only if it is closed. For standard c, using closedir instead(findclose -> closedir).
-		// when Handle is created, it should be closed at last.
-		_findclose(handle);
-		return 0;
 	}
+	closedir(dir);
+	return 0;
 }
 
 void FileIO::_output_OneSurfaceMesh(QMeshPatch* eachLayer, std::string path) {

@@ -5,8 +5,13 @@
 #include "../QMeshLib/QMeshNode.h"
 #include "../QMeshLib/QMeshFace.h"
 #include "GLKGeometry.h"
-#include <gl/glu.h>
+#if defined(__APPLE__)
+#  include <OpenGL/glu.h>
+#else
+#  include <GL/glu.h>
+#endif
 #include <QPainter>
+#include <QPainterPath>
 #include <QtDebug>
 #include <QGLWidget>
 #include <QApplication>
@@ -683,11 +688,16 @@ void GLKLib::paintEvent(QPaintEvent *event)
     drawOpenGL();
     painter.endNativePainting();
 
-    if (((GLKCameraTool*)GetCurrentTool())->getCameraType() == ZOOMWINDOW && !m_drawPolylinePoints.isEmpty())
+    // On macOS, paintEvent can fire during widget insertion (QBoxLayout::insertWidget),
+    // before MainWindow installs the camera tool — guard against the null tool.
+    GLKMouseTool* tool = GetCurrentTool();
+    if (!tool) return;
+
+    if (((GLKCameraTool*)tool)->getCameraType() == ZOOMWINDOW && !m_drawPolylinePoints.isEmpty())
         draw_polyline_2d(true);
-    if (GetCurrentTool()->tool_type == 1 && m_drawPolylinePoints.size() > 1)
+    if (tool->tool_type == 1 && m_drawPolylinePoints.size() > 1)
         draw_polyline_2d(false);
-    if (GetCurrentTool()->tool_type == 1 && m_drawLine.size() > 0)
+    if (tool->tool_type == 1 && m_drawLine.size() > 0)
         draw_line_2d();
 }
 

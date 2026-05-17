@@ -1,6 +1,5 @@
 #include <fstream>
 
-#include "io.h"
 #include "IsoLayerGeneration.h"
 
 void IsoLayerGeneration::generateIsoSurface(PolygenMesh* isoSurface, int layerNum) {

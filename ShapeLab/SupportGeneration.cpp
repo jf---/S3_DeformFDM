@@ -1,16 +1,21 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <cstring>
+#include <sys/stat.h>
 #include <Eigen/Eigen>
-#include <Eigen/PardisoSupport>
 
 #include "SupportGeneration.h"
 #include "../GLKLib/GLKGeometry.h"
 #include "QHullLib/qhull_a.h"
 #include "PMBody.h"
-#include "io.h"
 #include "dirent.h"
 #include "alphanum.hpp"
+
+// MSVC's <sys/stat.h> doesn't define POSIX S_ISDIR â€” synthesize from S_IFMT/S_IFDIR.
+#ifndef S_ISDIR
+#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
 
 void SupportGeneration::initial(QMeshPatch* tetPatch, QMeshPatch* platform, PolygenMesh* supportModelSet) {
 
@@ -156,7 +161,7 @@ bool SupportGeneration::_find_targetNode(
 		if (ROTATE_TO_DEGREE(radian_angle) < descend_angle) step_Direction = descend_dir; // in the range of support angle, directly downward
 		else {
 			// only rotate a support angle
-			Eigen::AngleAxisd V1(DEGREE_TO_ROTATE(descend_angle), rotateAxis);//rotateAxis£¬rotate tau(deg)
+			Eigen::AngleAxisd V1(DEGREE_TO_ROTATE(descend_angle), rotateAxis);//rotateAxisï¿½ï¿½rotate tau(deg)
 			step_Direction = V1 * step_Direction;
 		}
 	}
@@ -1175,7 +1180,7 @@ void SupportGeneration::scalarField_4_supportSpace() {
 
 	Eigen::SparseMatrix<double> ATA(supportNodeNum, supportNodeNum);
 	ATA = Parameter.transpose() * Parameter;
-	Eigen::PardisoLU <Eigen::SparseMatrix<double>> Solver;
+	Eigen::SparseLU <Eigen::SparseMatrix<double>> Solver;// (PardisoLU/SparseLU)
 	Solver.compute(ATA);
 
 	Eigen::VectorXd ATb(supportNodeNum);
@@ -1368,51 +1373,25 @@ void SupportGeneration::output_compatibleLayer_4_remesh(PolygenMesh* compatible_
 }
 
 int SupportGeneration::_remove_allFile_in_Dir(std::string dirPath) {
+	DIR* handle = opendir(dirPath.c_str());
+	if (!handle) return 0;
 
-	struct _finddata_t fb;   //find the storage structure of the same properties file.
-	std::string path;
-	intptr_t    handle;
-	int  resultone;
-	int   noFile;            // the tag for the system's hidden files
+	struct dirent* entry;
+	while ((entry = readdir(handle)) != nullptr) {
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
 
-	noFile = 0;
-	handle = 0;
+		std::string path = dirPath + "/" + entry->d_name;
+		struct stat sb;
+		if (stat(path.c_str(), &sb) != 0) continue;
 
-	path = dirPath + "/*";
-
-	handle = _findfirst(path.c_str(), &fb);
-
-	//find the first matching file
-	if (handle != -1)
-	{
-		//find next matching file
-		while (0 == _findnext(handle, &fb))
-		{
-			// "." and ".." are not processed
-			noFile = strcmp(fb.name, "..");
-
-			if (0 != noFile)
-			{
-				path.clear();
-				path = dirPath + "/" + fb.name;
-
-				//fb.attrib == 16 means folder
-				if (fb.attrib == 16)
-				{
-					_remove_allFile_in_Dir(path);
-				}
-				else
-				{
-					//not folder, delete it. if empty folder, using _rmdir instead.
-					remove(path.c_str());
-				}
-			}
+		if (S_ISDIR(sb.st_mode)) {
+			_remove_allFile_in_Dir(path);
+		} else {
+			remove(path.c_str());
 		}
-		// close the folder and delete it only if it is closed. For standard c, using closedir instead(findclose -> closedir).
-		// when Handle is created, it should be closed at last.
-		_findclose(handle);
-		return 0;
 	}
+	closedir(handle);
+	return 0;
 }
 
 void SupportGeneration::update_inputMesh_4treeSkeleton_Generation(
@@ -2026,7 +2005,7 @@ void SupportGeneration::_compute_descend_Dir_hostNode(QMeshNode* hostNode, bool 
 		hostNode->descend_From_TreeNode_Dir = descend_dir; // in the range of support angle, directly downward
 	else {
 		// only rotate a support angle
-		Eigen::AngleAxisd V(DEGREE_TO_ROTATE(tau), rotateAxis);//rotateAxis£¬rotate tau(deg)
+		Eigen::AngleAxisd V(DEGREE_TO_ROTATE(tau), rotateAxis);//rotateAxisï¿½ï¿½rotate tau(deg)
 		hostNode->descend_From_TreeNode_Dir = V * face_normal;
 	}
 	//hostNode->descend_From_TreeNode_Dir = face_normal;//tianyu test going
@@ -2177,7 +2156,7 @@ bool SupportGeneration::_compute_descend_Dir_followNode(QMeshNode* followNode, Q
 	}
 	else {
 		// only rotate a support angle
-		Eigen::AngleAxisd V(DEGREE_TO_ROTATE(tau), rotateAxis);	//rotateAxis£¬rotate tau(deg)
+		Eigen::AngleAxisd V(DEGREE_TO_ROTATE(tau), rotateAxis);	//rotateAxisï¿½ï¿½rotate tau(deg)
 		followNode->descend_From_TreeNode_Dir = V * face_normal;
 		is_merged = false;
 	}
