@@ -7404,6 +7404,7 @@ void DeformTet::runASAP_Hybrid_SL_SR_SQ() {
 	//---------------------------------------------------------------------------------------------------------------
 	// Main function of ASAP iteration
 	for (int loop = 0; loop < m_loopTime; loop++) {
+		std::cout << "[ASAP] outer " << (loop + 1) << "/" << m_loopTime << std::endl;
 
 		// only the element with one boundary face are considered as overhang tet
 		this->_detectOverhangFace2();
@@ -7415,10 +7416,12 @@ void DeformTet::runASAP_Hybrid_SL_SR_SQ() {
 		this->_calFabricationEnergy_SupportLess();
 
 		for (int innerLoop = 0; innerLoop < m_innerLoopTime; innerLoop++) {
+			std::cout << "  [ASAP] inner " << (innerLoop + 1) << "/" << m_innerLoopTime
+			          << " (outer " << (loop + 1) << "/" << m_loopTime << ")" << std::endl;
 
 #pragma omp parallel
 			{
-#pragma omp for 
+#pragma omp for
 				// local rotation and scaling operation (frame_Local_new)
 				for (int i = 0; i < tetPatch->GetTetraNumber(); i++) {
 					QMeshTetra* Tetra = tetraPatch_elementSet[i];
