@@ -46,9 +46,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    // Headless entry point: loads tet, runs SL_SR_SQ deformation, inverse,
-    // layer generation, output (auto-remeshes). Used by main.cpp --headless.
-    void runHeadlessPipeline(const QString& tet_path, const QString& case_name = "SL_SR_SQ");
+    // Headless entry point: loads tet, runs deformation, inverse, layer
+    // generation, output (auto-remeshes). Used by main.cpp --headless.
+    // case_name: SF | SR | SQ | SL_SQ | SR_SQ | SL_SR | SL_SR_SQ (default).
+    // adaptive: use adaptiveHeight_curvedLayer_Generation (needed for AnkleBaseV1).
+    void runHeadlessPipeline(const QString& tet_path,
+                             const QString& case_name = "SL_SR_SQ",
+                             bool adaptive = false);
 
 public slots:
 	// Qtimer - defined function

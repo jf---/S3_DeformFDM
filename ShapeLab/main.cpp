@@ -9,12 +9,15 @@
 
 static void print_usage(const char* exe) {
     std::cerr <<
-        "usage: " << exe << " [--headless <model.tet>] [--case SL_SR_SQ]\n"
+        "usage: " << exe << " [--headless <model.tet>] [--case NAME] [--adaptive]\n"
         "\n"
         "  no args            launch GUI (default)\n"
         "  --headless PATH    load PATH (a .tet file), run deformation + inverse\n"
         "                     + layer generation + remesh, exit\n"
-        "  --case NAME        deformation case (default: SL_SR_SQ)\n";
+        "  --case NAME        deformation: SF | SR | SQ | SL_SQ | SR_SQ | SL_SR | SL_SR_SQ\n"
+        "                     (default SL_SR_SQ — README §1.7)\n"
+        "  --adaptive         use adaptive-height slicing (README §3.1, needed for\n"
+        "                     AnkleBaseV1) instead of fixed layer count\n";
 }
 
 int main(int argc, char *argv[])
@@ -22,6 +25,7 @@ int main(int argc, char *argv[])
     QString model_path;
     QString case_name = "SL_SR_SQ";
     bool headless = false;
+    bool adaptive = false;
 
     for (int i = 1; i < argc; ++i) {
         const char* a = argv[i];
@@ -30,6 +34,8 @@ int main(int argc, char *argv[])
             model_path = QString::fromLocal8Bit(argv[++i]);
         } else if (std::strcmp(a, "--case") == 0 && i + 1 < argc) {
             case_name = QString::fromLocal8Bit(argv[++i]);
+        } else if (std::strcmp(a, "--adaptive") == 0) {
+            adaptive = true;
         } else if (std::strcmp(a, "-h") == 0 || std::strcmp(a, "--help") == 0) {
             print_usage(argv[0]);
             return 0;
@@ -56,7 +62,7 @@ int main(int argc, char *argv[])
     w.show();
 
     if (headless) {
-        w.runHeadlessPipeline(model_path, case_name);
+        w.runHeadlessPipeline(model_path, case_name, adaptive);
         return 0;
     }
 

@@ -269,7 +269,7 @@ void MainWindow::_loadTetFile(const QString& path) {
     _updateFrameworkParameter();
 }
 
-void MainWindow::runHeadlessPipeline(const QString& tet_path, const QString& case_name) {
+void MainWindow::runHeadlessPipeline(const QString& tet_path, const QString& case_name, bool adaptive) {
     std::cout << "[headless] load " << tet_path.toStdString() << "\n";
     _loadTetFile(tet_path);
 
