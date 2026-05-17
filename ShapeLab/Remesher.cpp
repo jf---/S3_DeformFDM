@@ -1,6 +1,10 @@
 #include "Remesher.h"
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <vector>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cstring>
@@ -104,6 +108,97 @@ bool Remesher::remesh_file(const std::string& input_obj,
         return false;
     }
     return true;
+}
+
+namespace {
+
+// Offset OBJ face/line vertex indices. Token may be `v`, `v/vt`, `v//vn`, or
+// `v/vt/vn` (1-indexed, possibly negative). Only the v / vt / vn components
+// get offset; we never see negative indices from our writers so don't worry
+// about them.
+std::string offset_obj_token(const std::string& tok, int dv, int dvt, int dvn) {
+    std::ostringstream out;
+    std::istringstream iss(tok);
+    std::string part;
+    int slot = 0;
+    bool first = true;
+    while (std::getline(iss, part, '/')) {
+        if (!first) out << "/";
+        first = false;
+        if (!part.empty()) {
+            int idx = std::stoi(part);
+            int delta = (slot == 0) ? dv : (slot == 1) ? dvt : dvn;
+            out << (idx + delta);
+        }
+        ++slot;
+    }
+    return out.str();
+}
+
+} // namespace
+
+int Remesher::combine_directory(const std::string& input_dir,
+                                const std::string& output_obj) {
+    DIR* dir = opendir(input_dir.c_str());
+    if (!dir) {
+        std::cerr << "[Combine] cannot open input dir: " << input_dir << "\n";
+        return 0;
+    }
+
+    std::vector<std::string> files;
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        std::string name = entry->d_name;
+        if (ends_with(name, ".obj") || ends_with(name, ".OBJ")) files.push_back(name);
+    }
+    closedir(dir);
+    std::sort(files.begin(), files.end());
+
+    std::ofstream out(output_obj);
+    if (!out.is_open()) {
+        std::cerr << "[Combine] cannot write: " << output_obj << "\n";
+        return 0;
+    }
+    out << "# combined from " << files.size() << " OBJ file(s) in " << input_dir << "\n";
+
+    int v_off = 0, vt_off = 0, vn_off = 0;
+    int total_v = 0, total_f = 0;
+
+    for (const auto& name : files) {
+        std::ifstream in(input_dir + "/" + name);
+        if (!in.is_open()) continue;
+
+        out << "o " << name.substr(0, name.find_last_of('.')) << "\n";
+
+        int v_n = 0, vt_n = 0, vn_n = 0, f_n = 0;
+        std::string line;
+        while (std::getline(in, line)) {
+            if (line.empty() || line[0] == '#') continue;
+
+            if (line.rfind("v ",  0) == 0) { out << line << "\n"; ++v_n;  }
+            else if (line.rfind("vt ", 0) == 0) { out << line << "\n"; ++vt_n; }
+            else if (line.rfind("vn ", 0) == 0) { out << line << "\n"; ++vn_n; }
+            else if (line.rfind("f ", 0) == 0 || line.rfind("l ", 0) == 0) {
+                out << line[0];
+                std::istringstream iss(line.substr(2));
+                std::string token;
+                while (iss >> token) out << " " << offset_obj_token(token, v_off, vt_off, vn_off);
+                out << "\n";
+                if (line[0] == 'f') ++f_n;
+            }
+            // skip mtllib/usemtl/g/s/o — combining doesn't need them
+        }
+
+        v_off  += v_n;
+        vt_off += vt_n;
+        vn_off += vn_n;
+        total_v += v_n;
+        total_f += f_n;
+    }
+
+    std::cout << "[Combine] " << files.size() << " file(s) -> " << output_obj
+              << "  (verts=" << total_v << " faces=" << total_f << ")\n";
+    return (int)files.size();
 }
 
 int Remesher::remesh_directory(const std::string& input_dir,

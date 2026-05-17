@@ -33,4 +33,11 @@ public:
     static bool remesh_file(const std::string& input_obj,
                             const std::string& output_obj,
                             const RemeshParams& p = {});
+
+    // Concatenate every .obj in input_dir into one output_obj, offsetting
+    // vertex indices so faces still reference the right verts. Each input
+    // becomes an `o <name>` group inside the combined file. Returns the
+    // number of input OBJs combined.
+    static int combine_directory(const std::string& input_dir,
+                                 const std::string& output_obj);
 };

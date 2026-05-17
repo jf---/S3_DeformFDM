@@ -291,6 +291,20 @@ void MainWindow::runHeadlessPipeline(const QString& tet_path, const QString& cas
     std::cout << "[headless] step 3.5: output layers + in-process remesh\n";
     output_IsoLayer_set();
 
+    std::cout << "[headless] step 5: toolpath generation (reads remeshed layers from disk)\n";
+    toolPath_Generation();
+
+    std::cout << "[headless] step 5b: output toolpath\n";
+    output_Toolpath_set();
+
+    std::cout << "[headless] post: combine OBJs per directory\n";
+    Remesher::combine_directory("../DataSet/remesh_operation/layers_unremeshed",
+                                "../DataSet/remesh_operation/layers_unremeshed_combined.obj");
+    Remesher::combine_directory("../DataSet/remesh_operation/layers_remeshed",
+                                "../DataSet/remesh_operation/layers_remeshed_combined.obj");
+    Remesher::combine_directory("../DataSet/CURVED_LAYER",
+                                "../DataSet/CURVED_LAYER_combined.obj");
+
     std::cout << "[headless] done\n";
 }
 
